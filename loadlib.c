@@ -724,12 +724,15 @@ static const luaL_Reg ll_funcs[] = {
 
 
 static void createsearcherstable (lua_State *L) {
-  static const lua_CFunction searchers[] =
+  static const lua_CFunction searchers[] = {
+    searcher_preload,
+    searcher_Lua,
+    searcher_C,
 #ifndef _KERNEL
-    {searcher_preload, searcher_Lua, searcher_C, searcher_Croot, NULL};
-#elif defined(__linux__)
-    {searcher_preload, searcher_Lua, searcher_C, NULL};
+    searcher_Croot,
 #endif /* _KERNEL */
+    NULL
+  };
   int i;
   /* create 'searchers' table */
   lua_createtable(L, sizeof(searchers)/sizeof(searchers[0]) - 1, 0);
