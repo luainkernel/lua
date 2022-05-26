@@ -54,6 +54,8 @@ typedef union Value {
 #ifndef _KERNEL
   lua_Number n;    /* float numbers */
 #endif /* _KERNEL */
+  /* not used, but may avoid warnings for uninitialized value */
+  lu_byte ub;
 } Value;
 
 
