@@ -1,5 +1,5 @@
 /*
-** $Id: lauxlib.c,v 1.288 2016/12/04 20:17:24 roberto Exp roberto $
+** $Id: lauxlib.c,v 1.289.1.1 2017/04/19 17:20:42 roberto Exp $
 ** Auxiliary functions for building Lua libraries
 ** See Copyright Notice in lua.h
 */
@@ -1025,8 +1025,13 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
     free(ptr);
     return NULL;
   }
-  else
-    return realloc(ptr, nsize);
+  else {  /* cannot fail when shrinking a block */
+    void *newptr = realloc(ptr, nsize);
+    if (newptr == NULL && ptr != NULL && nsize <= osize)
+      return ptr;  /* keep the original block */
+    else  /* no fail or not shrinking */
+     return newptr;  /* use the new block */
+  }
 }
 
 

@@ -1,5 +1,4 @@
 /*
-** $Id: lua.h,v 1.331 2016/05/30 15:53:28 roberto Exp roberto $
 ** Lua - A Scripting Language
 ** Lua.org, PUC-Rio, Brazil (http://www.lua.org)
 ** See Copyright Notice at the end of this file
@@ -22,21 +21,23 @@
 #define LUA_VERSION_MINOR	"3"
 #define LUA_VERSION_NUM		503
 #ifndef _KERNEL
-#define LUA_VERSION_RELEASE	"4"
+#define LUA_VERSION_RELEASE	"6"
 #else /* _KERNEL */
-#define LUA_VERSION_RELEASE	"4 (kernel)"
+#define LUA_VERSION_RELEASE	"6 (kernel)"
 #endif /* _KERNEL */
 
 #define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
 #define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 #ifndef _KERNEL
-#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2017 Lua.org, PUC-Rio"
+#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2020 Lua.org, PUC-Rio"
 #else /* _KERNEL */
 #define LUA_COPYRIGHT	LUA_RELEASE \
+	"  Copyright (c) 2020      ring-0 Ltda." \
 	"  Copyright (c) 2017-2019 CUJO LLC." \
 	"  Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>." \
-	"  Copyright (C) 1994-2017 Lua.org, PUC-Rio"
+	"  Copyright (C) 1994-2020 Lua.org, PUC-Rio"
 #endif /* _KERNEL */
+
 #define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
 
 
@@ -497,7 +498,7 @@ struct lua_Debug {
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
-* Copyright (C) 1994-2017 Lua.org, PUC-Rio.
+* Copyright (C) 1994-2020 Lua.org, PUC-Rio.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
