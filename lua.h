@@ -8,8 +8,8 @@
 #ifndef lua_h
 #define lua_h
 
-#include <stdarg.h>
 #ifndef _KERNEL
+#include <stdarg.h>
 #include <stddef.h>
 #endif /* _KERNEL */
 

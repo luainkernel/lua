@@ -673,7 +673,9 @@
 
 #if !defined(LUA_USE_C89) && defined(__STDC_VERSION__) && \
     __STDC_VERSION__ >= 199901L
+#ifndef _KERNEL
 #include <stdint.h>
+#endif /* _KERNEL */
 #if defined(INTPTR_MAX)  /* even in C99 this type is optional */
 #undef LUA_KCONTEXT
 #define LUA_KCONTEXT	intptr_t
@@ -827,7 +829,10 @@
 
 /* math.h */
 #include <linux/random.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0)
+#define l_rand()		get_random_u32()
+#define l_srand(x)		/* not needed */
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)
 #define l_rand()		prandom_u32()
 #define l_srand(x)		prandom_seed(x)
 #else
@@ -847,22 +852,21 @@ extern void longjmp(luai_jmpbuf);
 
 /* time.h */
 #include <linux/ktime.h>
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5,6,0)
-#include <linux/time.h>
-typedef struct timespec lunatik_time_t;
-#define luai_time(t)		getnstimeofday(&t)
-#elif defined(LUA_32BITS)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+#if defined(LUA_32BITS)
 #error "kernel versions >= 5.6.0 do not support 32-bit time values"
-#else
-typedef struct timespec64 lunatik_time_t;
-#define luai_time(t)		ktime_get_real_ts64(&t)
+#endif
+#include <linux/time.h>
+typedef time64_t		time_t;
+#define timespec		timespec64
+#define getnstimeofday(t)	ktime_get_real_ts64(t)
 #endif
 
-static inline int time(void *p)
+static inline time_t time(void *p)
 {
-  lunatik_time_t t;
+  struct timespec t;
   ((void) p);
-  luai_time(t);
+  getnstimeofday(&t);
   return t.tv_sec;
 }
 #define luai_makeseed()	        cast(unsigned int, time(NULL))
@@ -881,6 +885,13 @@ static inline int time(void *p)
 #include <linux/slab.h>
 #define free(a) 			kfree(a)
 #define realloc(a, b) 		krealloc(a, b, GFP_ATOMIC)
+
+/* stdarg.h */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0)
+#include <linux/stdarg.h>
+#else
+#include <stdarg.h>
+#endif
 
 /* signal.h */
 #define l_signalT	lu_byte

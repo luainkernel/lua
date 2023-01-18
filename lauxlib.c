@@ -12,9 +12,7 @@
 
 #ifndef _KERNEL
 #include <errno.h>
-#endif /* _KERNEL */
 #include <stdarg.h>
-#ifndef _KERNEL
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
