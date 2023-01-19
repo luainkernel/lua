@@ -329,10 +329,10 @@ static int os_date (lua_State *L) {
 
 
 static int os_time (lua_State *L) {
-#ifndef _KERNEL
   time_t t;
   if (lua_isnoneornil(L, 1))  /* called without args? */
     t = time(NULL);  /* get current time */
+#ifndef _KERNEL
   else {
     struct tm ts;
     luaL_checktype(L, 1, LUA_TTABLE);
@@ -347,22 +347,12 @@ static int os_time (lua_State *L) {
     t = mktime(&ts);
     setallfields(L, &ts);  /* update fields with normalized values */
   }
+#endif /* _KERNEL */
   if (t != (time_t)(l_timet)t || t == (time_t)(-1))
     return luaL_error(L,
                   "time result cannot be represented in this installation");
   l_pushtime(L, t);
   return 1;
-#else
-  lunatik_time_t t;
-  lua_Integer res;
-
-  luai_time(t);
-  lua_pushinteger(L, (lua_Integer)t.tv_sec);
-  res = t.tv_sec * NSEC_PER_SEC + t.tv_nsec;
-  lua_pushinteger(L, res);
-
-  return 2;
-#endif /* _KERNEL */
 }
 
 
