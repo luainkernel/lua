@@ -1,4 +1,4 @@
--- $Id: literals.lua,v 1.36 2016/11/07 13:11:28 roberto Exp $
+-- $Id: testes/literals.lua $
 -- See Copyright Notice in file all.lua
 
 print('testing scanner')
@@ -56,16 +56,23 @@ assert("abc\z
 assert("\u{0}\u{00000000}\x00\0" == string.char(0, 0, 0, 0))
 
 -- limits for 1-byte sequences
-assert("\u{0}\u{7F}" == "\x00\z\x7F")
+assert("\u{0}\u{7F}" == "\x00\x7F")
 
 -- limits for 2-byte sequences
-assert("\u{80}\u{7FF}" == "\xC2\x80\z\xDF\xBF")
+assert("\u{80}\u{7FF}" == "\xC2\x80\xDF\xBF")
 
 -- limits for 3-byte sequences
-assert("\u{800}\u{FFFF}" ==   "\xE0\xA0\x80\z\xEF\xBF\xBF")
+assert("\u{800}\u{FFFF}" ==   "\xE0\xA0\x80\xEF\xBF\xBF")
 
 -- limits for 4-byte sequences
-assert("\u{10000}\u{10FFFF}" == "\xF0\x90\x80\x80\z\xF4\x8F\xBF\xBF")
+assert("\u{10000}\u{1FFFFF}" == "\xF0\x90\x80\x80\xF7\xBF\xBF\xBF")
+
+-- limits for 5-byte sequences
+assert("\u{200000}\u{3FFFFFF}" == "\xF8\x88\x80\x80\x80\xFB\xBF\xBF\xBF\xBF")
+
+-- limits for 6-byte sequences
+assert("\u{4000000}\u{7FFFFFFF}" ==
+       "\xFC\x84\x80\x80\x80\x80\xFD\xBF\xBF\xBF\xBF\xBF")
 
 
 -- Error in escape sequences
@@ -94,7 +101,7 @@ lexerror([["xyz\300"]], [[\300"]])
 lexerror([["   \256"]], [[\256"]])
 
 -- errors in UTF-8 sequences
-lexerror([["abc\u{110000}"]], [[abc\u{110000]])   -- too large
+lexerror([["abc\u{100000000}"]], [[abc\u{100000000]])   -- too large
 lexerror([["abc\u11r"]], [[abc\u1]])    -- missing '{'
 lexerror([["abc\u"]], [[abc\u"]])    -- missing '{'
 lexerror([["abc\u{11r"]], [[abc\u{11r]])    -- missing '}'
@@ -201,6 +208,30 @@ a = nil
 b = nil
 
 
+do  -- reuse of long strings
+
+  -- get the address of a string
+  local function getadd (s) return string.format("%p", s) end
+
+  local s1 <const> = "01234567890123456789012345678901234567890123456789"
+  local s2 <const> = "01234567890123456789012345678901234567890123456789"
+  local s3 = "01234567890123456789012345678901234567890123456789"
+  local function foo() return s1 end
+  local function foo1() return s3 end
+  local function foo2()
+    return "01234567890123456789012345678901234567890123456789"
+  end
+  local a1 = getadd(s1)
+  assert(a1 == getadd(s2))
+  assert(a1 == getadd(foo()))
+  assert(a1 == getadd(foo1()))
+  assert(a1 == getadd(foo2()))
+
+  local sd = "0123456789" .. "0123456789012345678901234567890123456789"
+  assert(sd == s1 and getadd(sd) ~= a1)
+end
+
+
 -- testing line ends
 prog = [[
 a = 1        -- a comment
@@ -274,7 +305,7 @@ if os.setlocale("pt_BR") or os.setlocale("ptb") then
 
   assert(" 0x.1 " + " 0x,1" + "-0X.1\t" == 0x0.1)
 
-  assert(tonumber"inf" == nil and tonumber"NAN" == nil)
+  assert(not tonumber"inf" and not tonumber"NAN")
 
   assert(assert(load(string.format("return %q", 4.51)))() == 4.51)
 
@@ -298,5 +329,14 @@ assert(not load"a = 'non-ending string")
 assert(not load"a = 'non-ending string\n'")
 assert(not load"a = '\\345'")
 assert(not load"a = [=x]")
+
+local function malformednum (n, exp)
+  local s, msg = load("return " .. n)
+  assert(not s and string.find(msg, exp))
+end
+
+malformednum("0xe-", "near <eof>")
+malformednum("0xep-p", "malformed number")
+malformednum("1print()", "malformed number")
 
 print('OK')
