@@ -864,6 +864,7 @@ static inline time_t time(void *p)
 
 /* stdlib.h */
 #include <linux/slab.h>
+#define abort()			panic("Lua has aborted!")
 #define free(a) 		kfree(a)
 #define realloc(a, b) 		krealloc(a, b, GFP_ATOMIC)
 
