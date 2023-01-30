@@ -48,8 +48,8 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_TABLIBNAME, luaopen_table},
 #ifndef _KERNEL
   {LUA_IOLIBNAME, luaopen_io},
-#endif /* _KERNEL */
   {LUA_OSLIBNAME, luaopen_os},
+#endif /* _KERNEL */
   {LUA_STRLIBNAME, luaopen_string},
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_UTF8LIBNAME, luaopen_utf8},
