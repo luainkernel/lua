@@ -884,9 +884,6 @@ static inline time_t time(void *p)
 #define UCHAR_MAX	(255)
 #define CHAR_BIT	(8)
 
-#undef LUAL_BUFFERSIZE
-#define LUAL_BUFFERSIZE		(64)
-
 #ifdef lauxlib_c
 #define panic	lua_panic
 #endif
