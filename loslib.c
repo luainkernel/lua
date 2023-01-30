@@ -10,13 +10,11 @@
 #include "lprefix.h"
 
 
-#ifndef _KERNEL
 #include <errno.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#endif /* _KERNEL */
 
 #include "lua.h"
 
@@ -141,7 +139,6 @@
 
 
 
-#ifndef _KERNEL
 static int os_execute (lua_State *L) {
   const char *cmd = luaL_optstring(L, 1, NULL);
   int stat;
@@ -344,14 +341,12 @@ static int os_date (lua_State *L) {
   }
   return 1;
 }
-#endif /* _KERNEL */
 
 
 static int os_time (lua_State *L) {
   time_t t;
   if (lua_isnoneornil(L, 1))  /* called without args? */
     t = time(NULL);  /* get current time */
-#ifndef _KERNEL
   else {
     struct tm ts;
     luaL_checktype(L, 1, LUA_TTABLE);
@@ -366,7 +361,6 @@ static int os_time (lua_State *L) {
     t = mktime(&ts);
     setallfields(L, &ts);  /* update fields with normalized values */
   }
-#endif /* _KERNEL */
   if (t != (time_t)(l_timet)t || t == (time_t)(-1))
     return luaL_error(L,
                   "time result cannot be represented in this installation");
@@ -375,7 +369,6 @@ static int os_time (lua_State *L) {
 }
 
 
-#ifndef _KERNEL
 static int os_difftime (lua_State *L) {
   time_t t1 = l_checktime(L, 1);
   time_t t2 = l_checktime(L, 2);
@@ -409,11 +402,9 @@ static int os_exit (lua_State *L) {
   if (L) exit(status);  /* 'if' to avoid warnings for unreachable 'return' */
   return 0;
 }
-#endif /* _KERNEL */
 
 
 static const luaL_Reg syslib[] = {
-#ifndef _KERNEL
   {"clock",     os_clock},
   {"date",      os_date},
   {"difftime",  os_difftime},
@@ -423,11 +414,8 @@ static const luaL_Reg syslib[] = {
   {"remove",    os_remove},
   {"rename",    os_rename},
   {"setlocale", os_setlocale},
-#endif /* _KERNEL */
   {"time",      os_time},
-#ifndef _KERNEL
   {"tmpname",   os_tmpname},
-#endif /* _KERNEL */
   {NULL, NULL}
 };
 
