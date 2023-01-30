@@ -809,12 +809,21 @@
 #undef LUA_MAXINTEGER
 #undef LUA_MININTEGER
 
+#ifdef __LP64__
 #define LUA_INTEGER		long long
 #define LUA_INTEGER_FRMLEN	"ll"
 #define LUA_UNSIGNED	        unsigned long long
 #define LUA_MAXUNSIGNED		ULLONG_MAX
 #define LUA_MAXINTEGER		LLONG_MAX
 #define LUA_MININTEGER		LLONG_MIN
+#else
+#define LUA_INTEGER		long
+#define LUA_INTEGER_FRMLEN	"l"
+#define LUA_UNSIGNED	        unsigned long
+#define LUA_MAXUNSIGNED		ULONG_MAX
+#define LUA_MAXINTEGER		LONG_MAX
+#define LUA_MININTEGER		LONG_MIN
+#endif /* __LP64__ */
 
 #define LUAI_UACNUMBER		LUA_INTEGER
 #define LUA_NUMBER		LUA_INTEGER
@@ -877,19 +886,6 @@ static inline time_t time(void *p)
 
 #undef LUAL_BUFFERSIZE
 #define LUAL_BUFFERSIZE		(64)
-
-#ifndef __LP64__
-#include <asm/div64.h>
-
-/* llvm */
-s64 __modti3(s64 a, s64 b);
-
-#define lunatik_idiv(n, m)	((lua_Integer) div64_s64((s64) n, (s64) m))
-#define lunatik_imod(n, m)	((lua_Integer) __modti3((s64) n, (s64) m))
-#else
-#define lunatik_idiv(n, m)	((n) / (m))
-#define lunatik_imod(n, m)	((n) % (m))
-#endif /* __LP64__ */
 
 #ifdef lauxlib_c
 #define panic	lua_panic
