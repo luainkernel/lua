@@ -857,8 +857,8 @@ extern void longjmp(luai_jmpbuf);
 /* stdlib.h */
 #include <linux/slab.h>
 #define abort()			panic("Lua has aborted!")
-#define free(a) 		kfree(a)
-#define realloc(a, b) 		krealloc(a, b, GFP_ATOMIC)
+#define free(a) 		kfree((a))
+#define realloc(a, b) 		krealloc((a), (b), GFP_KERNEL)
 
 /* signal.h */
 /* see https://www.gnu.org/software/libc/manual/html_node/Atomic-Types.html */
