@@ -878,7 +878,8 @@ static inline time_t time(void *p)
 #define realloc(a, b) 		krealloc(a, b, GFP_ATOMIC)
 
 /* signal.h */
-#define l_signalT	lu_byte
+/* see https://www.gnu.org/software/libc/manual/html_node/Atomic-Types.html */
+#define l_signalT	int
 
 /* limits.h */
 #define UCHAR_MAX	(255)
