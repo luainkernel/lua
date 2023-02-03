@@ -76,6 +76,7 @@ static const char *const CLIBS = "_CLIBS";
 typedef void (*voidf)(void);
 
 
+#ifndef _KERNEL
 /*
 ** system-dependent functions
 */
@@ -222,46 +223,6 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
   return f;
 }
 
-#elif defined(_KERNEL) && defined(__linux__)
-/*
-** {========================================================
-** This is an implementation of loadlib for the Linux kernel.
-** =========================================================
-*/
-
-#include <linux/module.h>
-#ifdef MODULE /* see https://lwn.net/Articles/813350/ */
-#define symbol_lookup(p)	__symbol_get(p)
-#else
-#include <linux/kallsyms.h>
-#define symbol_lookup(p)	kallsyms_lookup_name(p)
-#endif
-
-static void lsys_unloadlib (void *lib) {
-  symbol_put_addr(lib);
-}
-
-static void *lsys_load (lua_State *L, const char *path, int seeglb) {
-  void *lib = (void *)symbol_lookup(path);
-  (void)(seeglb);  /* not used */
-  if (lib == NULL)
-    lua_pushfstring(L, "%s not found in kernel symbol table", path);
-  return lib;
-}
-
-static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
-  (void)(L); (void)(sym);  /* not used */
-  return (lua_CFunction)lib;
-}
-
-static int lookforfunc (lua_State *, const char *, const char *);
-static int checkload (lua_State *, int, const char *);
-
-static int searcher_C (lua_State *L) {
-  const char *name = luaL_checkstring(L, 1);
-  const char *sym = lua_pushfstring(L, LUA_POF"%s", name);
-  return checkload(L, (lookforfunc(L, sym, sym) == 0), name);
-}
 
 /* }====================================================== */
 
@@ -300,9 +261,9 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 
 /* }====================================================== */
 #endif				/* } */
+#endif /* _KERNEL */
 
 
-#ifndef _KERNEL
 /*
 ** {==================================================================
 ** Set Paths
@@ -317,9 +278,11 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 #define LUA_PATH_VAR    "LUA_PATH"
 #endif
 
+#ifndef _KERNEL
 #if !defined(LUA_CPATH_VAR)
 #define LUA_CPATH_VAR   "LUA_CPATH"
 #endif
+#endif /* _KERNEL */
 
 
 
@@ -371,7 +334,6 @@ static void setpath (lua_State *L, const char *fieldname,
 }
 
 /* }================================================================== */
-#endif /* _KERNEL */
 
 
 /*
@@ -469,7 +431,6 @@ static int ll_loadlib (lua_State *L) {
 
 
 
-#ifndef _KERNEL
 /*
 ** {======================================================
 ** 'require' function
@@ -575,7 +536,6 @@ static const char *findfile (lua_State *L, const char *name,
     luaL_error(L, "'package.%s' must be a string", pname);
   return searchpath(L, name, path, ".", dirsep);
 }
-#endif /* _KERNEL */
 
 
 static int checkload (lua_State *L, int stat, const char *filename) {
@@ -589,7 +549,6 @@ static int checkload (lua_State *L, int stat, const char *filename) {
 }
 
 
-#ifndef _KERNEL
 static int searcher_Lua (lua_State *L) {
   const char *filename;
   const char *name = luaL_checkstring(L, 1);
@@ -599,6 +558,7 @@ static int searcher_Lua (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** Try to find a load function for module 'modname' at file 'filename'.
 ** First, change '.' to '_' in 'modname'; then, if 'modname' has
@@ -623,16 +583,23 @@ static int loadfunc (lua_State *L, const char *filename, const char *modname) {
   openfunc = lua_pushfstring(L, LUA_POF"%s", modname);
   return lookforfunc(L, filename, openfunc);
 }
+#endif /* _KERNEL */
 
 
 static int searcher_C (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
+#ifndef _KERNEL
   const char *filename = findfile(L, name, "cpath", LUA_CSUBSEP);
   if (filename == NULL) return 1;  /* module not found in this path */
   return checkload(L, (loadfunc(L, filename, name) == 0), filename);
+#elif defined(__linux__)
+  const char *sym = lua_pushfstring(L, LUA_POF"%s", name);
+  return checkload(L, (lookforfunc(L, sym, sym) == 0), name);
+#endif /* _KERNEL */
 }
 
 
+#ifndef _KERNEL
 static int searcher_Croot (lua_State *L) {
   const char *filename;
   const char *name = luaL_checkstring(L, 1);
@@ -739,15 +706,13 @@ static int ll_require (lua_State *L) {
 
 static const luaL_Reg pk_funcs[] = {
   {"loadlib", ll_loadlib},
-#ifndef _KERNEL
   {"searchpath", ll_searchpath},
-#endif /* _KERNEL */
   /* placeholders */
   {"preload", NULL},
 #ifndef _KERNEL
   {"cpath", NULL},
-  {"path", NULL},
 #endif /* _KERNEL */
+  {"path", NULL},
   {"searchers", NULL},
   {"loaded", NULL},
   {NULL, NULL}
@@ -765,7 +730,7 @@ static void createsearcherstable (lua_State *L) {
 #ifndef _KERNEL
     {searcher_preload, searcher_Lua, searcher_C, searcher_Croot, NULL};
 #elif defined(__linux__)
-    {searcher_preload, searcher_C, NULL};
+    {searcher_preload, searcher_Lua, searcher_C, NULL};
 #endif /* _KERNEL */
   int i;
   /* create 'searchers' table */
@@ -797,9 +762,9 @@ LUAMOD_API int luaopen_package (lua_State *L) {
   createclibstable(L);
   luaL_newlib(L, pk_funcs);  /* create 'package' table */
   createsearcherstable(L);
-#ifndef _KERNEL
   /* set paths */
   setpath(L, "path", LUA_PATH_VAR, LUA_PATH_DEFAULT);
+#ifndef _KERNEL
   setpath(L, "cpath", LUA_CPATH_VAR, LUA_CPATH_DEFAULT);
 #endif /* _KERNEL */
   /* store config information */
