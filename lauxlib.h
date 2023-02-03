@@ -103,6 +103,8 @@ LUALIB_API int (luaL_loadfilex) (lua_State *L, const char *filename,
                                                const char *mode);
 
 #define luaL_loadfile(L,f)	luaL_loadfilex(L,f,NULL)
+#elif defined(__linux__)
+LUALIB_API int (luaL_loadfile) (lua_State *L, const char *filename);
 #endif /* _KERNEL */
 
 LUALIB_API int (luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz,
