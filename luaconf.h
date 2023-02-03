@@ -876,6 +876,19 @@ static inline time_t time(void *p)
 #define abort()			panic("Lua has aborted!")
 #define free(a) 		kfree((a))
 #define realloc(a, b) 		krealloc((a), (b), GFP_KERNEL)
+#define getenv(n)		(NULL)
+
+#include <linux/fs.h>
+/* used only for readable() @ loadlib.c */
+typedef struct file FILE;
+static inline struct file *fopen(const char *name, const char *mode) {
+  struct file *f;
+  (void)mode;
+  if (unlikely(name == NULL) || IS_ERR(f = filp_open(name, O_RDONLY, 0600)))
+    return NULL;
+  return f;
+}
+#define fclose(f)	filp_close((f), NULL)
 
 /* signal.h */
 /* see https://www.gnu.org/software/libc/manual/html_node/Atomic-Types.html */
@@ -888,6 +901,12 @@ static inline time_t time(void *p)
 #ifdef lauxlib_c
 #define panic	lua_panic
 #endif
+
+#undef LUA_ROOT
+#define LUA_ROOT	"/lib/modules/lua/"
+
+#undef LUA_PATH_DEFAULT
+#define LUA_PATH_DEFAULT  LUA_ROOT"?.lua;" LUA_ROOT"?/init.lua"
 
 /* keep this as the last ifdef to prevent incorrect undefs on linux's headers */
 #if defined(llex_c) || defined(lstate_c) || defined(lcode_c) || \

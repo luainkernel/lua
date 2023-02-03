@@ -302,7 +302,6 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 #endif				/* } */
 
 
-#ifndef _KERNEL
 /*
 ** {==================================================================
 ** Set Paths
@@ -317,9 +316,11 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 #define LUA_PATH_VAR    "LUA_PATH"
 #endif
 
+#ifndef _KERNEL
 #if !defined(LUA_CPATH_VAR)
 #define LUA_CPATH_VAR   "LUA_CPATH"
 #endif
+#endif /* _KERNEL */
 
 
 
@@ -371,7 +372,6 @@ static void setpath (lua_State *L, const char *fieldname,
 }
 
 /* }================================================================== */
-#endif /* _KERNEL */
 
 
 /*
@@ -469,7 +469,6 @@ static int ll_loadlib (lua_State *L) {
 
 
 
-#ifndef _KERNEL
 /*
 ** {======================================================
 ** 'require' function
@@ -575,7 +574,6 @@ static const char *findfile (lua_State *L, const char *name,
     luaL_error(L, "'package.%s' must be a string", pname);
   return searchpath(L, name, path, ".", dirsep);
 }
-#endif /* _KERNEL */
 
 
 static int checkload (lua_State *L, int stat, const char *filename) {
@@ -589,7 +587,6 @@ static int checkload (lua_State *L, int stat, const char *filename) {
 }
 
 
-#ifndef _KERNEL
 static int searcher_Lua (lua_State *L) {
   const char *filename;
   const char *name = luaL_checkstring(L, 1);
@@ -625,6 +622,7 @@ static int loadfunc (lua_State *L, const char *filename, const char *modname) {
 }
 
 
+#ifndef _KERNEL
 static int searcher_C (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   const char *filename = findfile(L, name, "cpath", LUA_CSUBSEP);
@@ -739,15 +737,13 @@ static int ll_require (lua_State *L) {
 
 static const luaL_Reg pk_funcs[] = {
   {"loadlib", ll_loadlib},
-#ifndef _KERNEL
   {"searchpath", ll_searchpath},
-#endif /* _KERNEL */
   /* placeholders */
   {"preload", NULL},
 #ifndef _KERNEL
   {"cpath", NULL},
-  {"path", NULL},
 #endif /* _KERNEL */
+  {"path", NULL},
   {"searchers", NULL},
   {"loaded", NULL},
   {NULL, NULL}
@@ -765,7 +761,7 @@ static void createsearcherstable (lua_State *L) {
 #ifndef _KERNEL
     {searcher_preload, searcher_Lua, searcher_C, searcher_Croot, NULL};
 #elif defined(__linux__)
-    {searcher_preload, searcher_C, NULL};
+    {searcher_preload, searcher_Lua, searcher_C, NULL};
 #endif /* _KERNEL */
   int i;
   /* create 'searchers' table */
@@ -797,9 +793,9 @@ LUAMOD_API int luaopen_package (lua_State *L) {
   createclibstable(L);
   luaL_newlib(L, pk_funcs);  /* create 'package' table */
   createsearcherstable(L);
-#ifndef _KERNEL
   /* set paths */
   setpath(L, "path", LUA_PATH_VAR, LUA_PATH_DEFAULT);
+#ifndef _KERNEL
   setpath(L, "cpath", LUA_CPATH_VAR, LUA_CPATH_DEFAULT);
 #endif /* _KERNEL */
   /* store config information */
