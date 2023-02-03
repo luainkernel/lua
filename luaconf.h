@@ -876,6 +876,19 @@ static inline time_t time(void *p)
 #define abort()			panic("Lua has aborted!")
 #define free(a) 		kfree((a))
 #define realloc(a, b) 		krealloc((a), (b), GFP_KERNEL)
+#define getenv(n)		(NULL)
+
+#include <linux/fs.h>
+/* used only for readable() @ loadlib.c */
+typedef struct file FILE;
+static inline struct file *fopen(const char *name, const char *mode) {
+  struct file *f;
+  (void)mode;
+  if (unlikely(name == NULL) || IS_ERR(f = filp_open(name, O_RDONLY, 0600)))
+    return NULL;
+  return f;
+}
+#define fclose(f)	filp_close((f), NULL)
 
 /* signal.h */
 /* see https://www.gnu.org/software/libc/manual/html_node/Atomic-Types.html */
@@ -891,6 +904,36 @@ static inline time_t time(void *p)
 #ifdef lauxlib_c
 #define panic	lua_panic
 #endif
+
+#ifdef loadlib_c
+#include <linux/module.h>
+#ifdef MODULE /* see https://lwn.net/Articles/813350/ */
+#define symbol_lookup(p)	__symbol_get(p)
+#else
+#include <linux/kallsyms.h>
+#define symbol_lookup(p)	kallsyms_lookup_name(p)
+#endif
+
+#define lsys_unloadlib(l)	symbol_put_addr((l))
+#define lsys_sym(L,l,s)		((lua_CFunction)(l))
+
+typedef struct lua_State lua_State;
+const char *(lua_pushfstring) (lua_State *L, const char *fmt, ...);
+
+static inline void *lsys_load (lua_State *L, const char *path, int seeglb) {
+  void *lib = (void *)symbol_lookup(path);
+  (void)(seeglb);  /* not used */
+  if (lib == NULL)
+    lua_pushfstring(L, "%s not found in kernel symbol table", path);
+  return lib;
+}
+#endif
+
+#undef LUA_ROOT
+#define LUA_ROOT	"/lib/modules/lua/"
+
+#undef LUA_PATH_DEFAULT
+#define LUA_PATH_DEFAULT  LUA_ROOT"?.lua;" LUA_ROOT"?/init.lua"
 
 /* keep this as the last ifdef to prevent incorrect undefs on linux's headers */
 #if defined(llex_c) || defined(lstate_c) || defined(lcode_c) || \
