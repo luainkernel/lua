@@ -1492,6 +1492,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         vmbreak;
       }
       vmcase(OP_MODK) {
+        savestate(L, ci);  /* in case of division by 0 */
         op_arithK(L, luaV_mod, luaV_modf);
         vmbreak;
       }
@@ -1506,6 +1507,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
 #endif /* _KERNEL */
       vmcase(OP_IDIVK) {
+        savestate(L, ci);  /* in case of division by 0 */
         op_arithK(L, luaV_idiv, luai_numidiv);
         vmbreak;
       }
@@ -1554,6 +1556,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         vmbreak;
       }
       vmcase(OP_MOD) {
+        savestate(L, ci);  /* in case of division by 0 */
         op_arith(L, luaV_mod, luaV_modf);
         vmbreak;
       }
@@ -1568,6 +1571,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       }
 #endif /* _KERNEL */
       vmcase(OP_IDIV) {  /* floor division */
+        savestate(L, ci);  /* in case of division by 0 */
         op_arith(L, luaV_idiv, luai_numidiv);
         vmbreak;
       }
