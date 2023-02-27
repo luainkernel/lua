@@ -4,7 +4,7 @@
 if _soft then
   return 'a'
 end
-
+-- XXX teste de co 
 print "testing large tables"
 
 local debug = require"debug" 
