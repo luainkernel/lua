@@ -935,6 +935,10 @@ static inline void *lsys_load (lua_State *L, const char *path, int seeglb) {
 #undef LUA_PATH_DEFAULT
 #define LUA_PATH_DEFAULT  LUA_ROOT"?.lua;" LUA_ROOT"?/init.lua"
 
+#include <linux/mutex.h>
+#undef LUA_EXTRASPACE
+#define LUA_EXTRASPACE		(sizeof(struct mutex))
+
 /* keep this as the last ifdef to prevent incorrect undefs on linux's headers */
 #if defined(llex_c) || defined(lstate_c) || defined(lcode_c) || \
         defined(ldebug_c) || defined(lparser_c)
