@@ -837,7 +837,7 @@ struct __jmp_buf {
 };
 typedef struct __jmp_buf luai_jmpbuf[1];
 extern int setjmp(luai_jmpbuf);
-extern void longjmp(luai_jmpbuf);
+extern void __attribute__((noreturn)) longjmp(luai_jmpbuf);
 #define LUAI_THROW(L,c)		longjmp(((c)->b))
 #define LUAI_TRY(L,c,a)		if (setjmp(((c)->b)) == 0) { a }
 
@@ -876,7 +876,10 @@ static inline time_t time(void *p)
 #define abort()			panic("Lua has aborted!")
 #define free(a) 		kfree((a))
 #define realloc(a, b) 		krealloc((a), (b), GFP_KERNEL)
-#define getenv(n)		(NULL)
+static inline char *getenv(const char *name) {
+  (void)name;
+  return NULL;
+}
 
 #include <linux/fs.h>
 /* used only for readable() @ loadlib.c */
@@ -898,8 +901,16 @@ static inline struct file *fopen(const char *name, const char *mode) {
 #define UCHAR_MAX	(255)
 #define CHAR_BIT	(8)
 
+/* vdso/limits.h defines UINT_MAX as (~0U) which might expands to 0xFFFFFFFFFFFFFFFF
+ * in the '#if' directive [https://gcc.gnu.org/onlinedocs/cpp/If.html] which breaks
+ * "#if (UINT_MAX >> 30) > 3" on ltable.c */
+#undef UINT_MAX
+#define UINT_MAX	(4294967295U)
+
+/* the frame size shouldn't be larger than 1024 bytes; thus, the value below
+ * must be adjusted to the frames of functions that use luaL_Buffer */
 #undef LUAL_BUFFERSIZE
-#define LUAL_BUFFERSIZE		(64)
+#define LUAL_BUFFERSIZE		(256)
 
 #ifdef lauxlib_c
 #define panic	lua_panic
