@@ -8,10 +8,8 @@
 #define llimits_h
 
 
-#ifndef _KERNEL
 #include <limits.h>
 #include <stddef.h>
-#endif /* _KERNEL */
 
 
 #include "lua.h"

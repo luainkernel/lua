@@ -10,12 +10,10 @@
 #include "lprefix.h"
 
 
-#ifndef _KERNEL
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#endif /* _KERNEL */
 
 #include "lua.h"
 
