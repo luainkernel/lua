@@ -14,8 +14,6 @@
 #elif defined(__linux__)
 #include <linux/kernel.h>
 #include <linux/version.h>
-#undef INT_MAX /* typecast breaks CPP at 112 */
-#define INT_MAX		(~0U>>1)
 #include <linux/ctype.h>
 #endif /* _KERNEL */
 
@@ -791,15 +789,6 @@
 */
 
 #ifdef _KERNEL
-
-#ifdef LUA_COMPAT_MODULE
-#undef LUA_COMPAT_MODULE
-#endif
-
-#ifdef LUA_COMPAT_LOADERS
-#undef LUA_COMPAT_LOADERS
-#endif
-
 #ifdef __linux__
 /* Integer types */
 #undef LUA_INTEGER
