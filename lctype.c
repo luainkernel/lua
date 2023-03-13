@@ -14,9 +14,7 @@
 
 #if !LUA_USE_CTYPE	/* { */
 
-#ifndef _KERNEL
 #include <limits.h>
-#endif /* _KERNEL */
 
 
 #if defined (LUA_UCID)		/* accept UniCode IDentifiers? */

@@ -8,14 +8,8 @@
 #ifndef luaconf_h
 #define luaconf_h
 
-#ifndef _KERNEL
 #include <limits.h>
 #include <stddef.h>
-#elif defined(__linux__)
-#include <linux/kernel.h>
-#include <linux/version.h>
-#include <linux/ctype.h>
-#endif /* _KERNEL */
 
 
 /*
@@ -647,9 +641,7 @@
 
 #if !defined(LUA_USE_C89) && defined(__STDC_VERSION__) && \
     __STDC_VERSION__ >= 199901L
-#ifndef _KERNEL
 #include <stdint.h>
-#endif /* _KERNEL */
 #if defined(INTPTR_MAX)  /* even in C99 this type is optional */
 #undef LUA_KCONTEXT
 #define LUA_KCONTEXT	intptr_t
@@ -789,146 +781,7 @@
 */
 
 #ifdef _KERNEL
-#ifdef __linux__
-/* Integer types */
-#undef LUA_INTEGER
-#undef LUA_INTEGER_FRMLEN
-#undef LUA_UNSIGNED
-#undef LUA_MAXUNSIGNED
-#undef LUA_MAXINTEGER
-#undef LUA_MININTEGER
-
-#ifdef __LP64__
-#define LUA_INTEGER		long long
-#define LUA_INTEGER_FRMLEN	"ll"
-#define LUA_UNSIGNED	        unsigned long long
-#define LUA_MAXUNSIGNED		ULLONG_MAX
-#define LUA_MAXINTEGER		LLONG_MAX
-#define LUA_MININTEGER		LLONG_MIN
-#else
-#define LUA_INTEGER		long
-#define LUA_INTEGER_FRMLEN	"l"
-#define LUA_UNSIGNED	        unsigned long
-#define LUA_MAXUNSIGNED		ULONG_MAX
-#define LUA_MAXINTEGER		LONG_MAX
-#define LUA_MININTEGER		LONG_MIN
-#endif /* __LP64__ */
-
-#define LUAI_UACNUMBER		LUA_INTEGER
-#define LUA_NUMBER		LUA_INTEGER
-#define LUA_NUMBER_FMT		LUA_INTEGER_FMT
-
-#define l_randomizePivot()	(~0)
-
-/* setjmp.h */
-struct __jmp_buf {
-  unsigned long long val[14];
-};
-typedef struct __jmp_buf luai_jmpbuf[1];
-extern int setjmp(luai_jmpbuf);
-extern void __attribute__((noreturn)) longjmp(luai_jmpbuf);
-#define LUAI_THROW(L,c)		longjmp(((c)->b))
-#define LUAI_TRY(L,c,a)		if (setjmp(((c)->b)) == 0) { a }
-
-#include <linux/random.h>
-#define luai_makeseed(L)		get_random_u32()
-
-/* stdio.h */
-#include <linux/printk.h>
-#define lua_writestring(s,l)		printk("%s", (s))
-#define lua_writeline()			printk("\n")
-#define lua_writestringerror(...)	printk(__VA_ARGS__)
-
-/* string.h */
-#include <linux/string.h>
-#define strcoll(l,r)		strcmp((l),(r))
-
-/* stdlib.h */
-#include <linux/slab.h>
-#define abort()			panic("Lua has aborted!")
-#define free(a) 		kfree((a))
-#define realloc(a, b) 		krealloc((a), (b), GFP_KERNEL)
-static inline char *getenv(const char *name) {
-  (void)name;
-  return NULL;
-}
-
-#include <linux/fs.h>
-/* used only for readable() @ loadlib.c */
-typedef struct file FILE;
-static inline struct file *fopen(const char *name, const char *mode) {
-  struct file *f;
-  (void)mode;
-  if (unlikely(name == NULL) || IS_ERR(f = filp_open(name, O_RDONLY, 0600)))
-    return NULL;
-  return f;
-}
-#define fclose(f)	filp_close((f), NULL)
-
-/* signal.h */
-/* see https://www.gnu.org/software/libc/manual/html_node/Atomic-Types.html */
-#define l_signalT	int
-
-/* limits.h */
-#define UCHAR_MAX	(255)
-#define CHAR_BIT	(8)
-
-/* vdso/limits.h defines UINT_MAX as (~0U) which might expands to 0xFFFFFFFFFFFFFFFF
- * in the '#if' directive [https://gcc.gnu.org/onlinedocs/cpp/If.html] which breaks
- * "#if (UINT_MAX >> 30) > 3" on ltable.c */
-#undef UINT_MAX
-#define UINT_MAX	(4294967295U)
-
-/* the frame size shouldn't be larger than 1024 bytes; thus, the value below
- * must be adjusted to the frames of functions that use luaL_Buffer */
-#undef LUAL_BUFFERSIZE
-#define LUAL_BUFFERSIZE		(256)
-
-#ifdef lauxlib_c
-#define panic	lua_panic
-#endif
-
-#ifdef loadlib_c
-#include <linux/module.h>
-#ifdef MODULE /* see https://lwn.net/Articles/813350/ */
-#define symbol_lookup(p)	__symbol_get(p)
-#else
-#include <linux/kallsyms.h>
-#define symbol_lookup(p)	kallsyms_lookup_name(p)
-#endif
-
-#define lsys_unloadlib(l)	symbol_put_addr((l))
-#define lsys_sym(L,l,s)		((lua_CFunction)(l))
-
-typedef struct lua_State lua_State;
-const char *(lua_pushfstring) (lua_State *L, const char *fmt, ...);
-
-static inline void *lsys_load (lua_State *L, const char *path, int seeglb) {
-  void *lib = (void *)symbol_lookup(path);
-  (void)(seeglb);  /* not used */
-  if (lib == NULL)
-    lua_pushfstring(L, "%s not found in kernel symbol table", path);
-  return lib;
-}
-#endif
-
-#undef LUA_ROOT
-#define LUA_ROOT	"/lib/modules/lua/"
-
-#undef LUA_PATH_DEFAULT
-#define LUA_PATH_DEFAULT  LUA_ROOT"?.lua;" LUA_ROOT"?/init.lua"
-
-#include <linux/mutex.h>
-#undef LUA_EXTRASPACE
-#define LUA_EXTRASPACE		(sizeof(struct mutex))
-
-/* keep this as the last ifdef to prevent incorrect undefs on linux's headers */
-#if defined(llex_c) || defined(lstate_c) || defined(lcode_c) || \
-        defined(ldebug_c) || defined(lparser_c)
-#undef current
-#endif
-#endif /* __linux__ */
-
+#include <lunatik_conf.h>
 #endif /* _KERNEL */
 
 #endif
