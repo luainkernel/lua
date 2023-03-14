@@ -262,7 +262,6 @@ static int math_type (lua_State *L) {
 #undef FIGS
 #define FIGS	64
 #endif
-#endif /* _KERNEL */
 
 
 /*
@@ -325,7 +324,6 @@ static Rand64 nextrand (Rand64 *state) {
 }
 
 
-#ifndef _KERNEL
 /* must take care to not shift stuff by more than 63 slots */
 
 
@@ -344,7 +342,6 @@ static Rand64 nextrand (Rand64 *state) {
 static lua_Number I2d (Rand64 x) {
   return (lua_Number)(trim64(x) >> shift64_FIG) * scaleFIG;
 }
-#endif /* _KERNEL */
 
 /* convert a 'Rand64' to a 'lua_Unsigned' */
 #define I2UInt(x)	((lua_Unsigned)trim64(x))
@@ -455,7 +452,6 @@ static Rand64 nextrand (Rand64 *state) {
 }
 
 
-#ifndef _KERNEL
 /*
 ** Converts a 'Rand64' into a float.
 */
@@ -505,7 +501,6 @@ static lua_Number I2d (Rand64 x) {
 }
 
 #endif
-#endif /* _KERNEL */
 
 
 /* convert a 'Rand64' to a 'lua_Unsigned' */
@@ -571,11 +566,7 @@ static int math_random (lua_State *L) {
   Rand64 rv = nextrand(state->s);  /* next pseudo-random value */
   switch (lua_gettop(L)) {  /* check number of arguments */
     case 0: {  /* no arguments */
-#ifndef _KERNEL
       lua_pushnumber(L, I2d(rv));  /* float between 0 and 1 */
-#else /* _KERNEL */
-      lua_pushinteger(L, I2UInt(rv));  /* full random integer */
-#endif /* _KERNEL */
       return 1;
     }
     case 1: {  /* only upper limit */
@@ -663,7 +654,6 @@ static void setrandfunc (lua_State *L) {
 /* }================================================================== */
 
 
-#ifndef _KERNEL
 /*
 ** {==================================================================
 ** Deprecated functions (for compatibility only)
@@ -753,11 +743,9 @@ static const luaL_Reg mathlib[] = {
   {"ldexp", math_ldexp},
   {"log10", math_log10},
 #endif
-#endif /* _KERNEL */
   /* placeholders */
   {"random", NULL},
   {"randomseed", NULL},
-#ifndef _KERNEL
   {"pi", NULL},
   {"huge", NULL},
 #endif /* _KERNEL */
@@ -782,7 +770,9 @@ LUAMOD_API int luaopen_math (lua_State *L) {
   lua_setfield(L, -2, "maxinteger");
   lua_pushinteger(L, LUA_MININTEGER);
   lua_setfield(L, -2, "mininteger");
+#ifndef _KERNEL
   setrandfunc(L);
+#endif /* _KERNEL */
   return 1;
 }
 
