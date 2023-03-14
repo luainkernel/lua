@@ -830,25 +830,8 @@ extern void __attribute__((noreturn)) longjmp(luai_jmpbuf);
 #define LUAI_THROW(L,c)		longjmp(((c)->b))
 #define LUAI_TRY(L,c,a)		if (setjmp(((c)->b)) == 0) { a }
 
-/* time.h */
-#include <linux/ktime.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
-#if LUA_32BITS
-#error "kernel versions >= 5.6.0 do not support 32-bit time values"
-#endif
-#include <linux/time.h>
-typedef time64_t		time_t;
-#define timespec		timespec64
-#define getnstimeofday(t)	ktime_get_real_ts64(t)
-#endif
-
-static inline time_t time(void *p)
-{
-  struct timespec t;
-  ((void) p);
-  getnstimeofday(&t);
-  return t.tv_sec;
-}
+#include <linux/random.h>
+#define luai_makeseed(L)		get_random_u32()
 
 /* stdio.h */
 #include <linux/printk.h>
