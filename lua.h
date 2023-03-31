@@ -30,13 +30,13 @@
 #endif /* _KERNEL */
 #define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 #ifndef _KERNEL
-#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2022 Lua.org, PUC-Rio"
+#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2023 Lua.org, PUC-Rio"
 #else /* _KERNEL */
 #define LUA_COPYRIGHT	LUA_RELEASE \
 	"  Copyright (c) 2020-2023 ring-0 Ltda." \
 	"  Copyright (c) 2017-2019 CUJO LLC." \
 	"  Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>." \
-	"  Copyright (C) 1994-2022 Lua.org, PUC-Rio"
+	"  Copyright (C) 1994-2023 Lua.org, PUC-Rio"
 #endif /* _KERNEL */
 #define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
 
@@ -532,7 +532,7 @@ struct lua_Debug {
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
-* Copyright (C) 1994-2022 Lua.org, PUC-Rio.
+* Copyright (C) 1994-2023 Lua.org, PUC-Rio.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
