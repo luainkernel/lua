@@ -18,16 +18,16 @@
 
 #define LUA_VERSION_MAJOR	"5"
 #define LUA_VERSION_MINOR	"4"
-#ifndef _KERNEL
 #define LUA_VERSION_RELEASE	"4"
-#else /* _KERNEL */
-#define LUA_VERSION_RELEASE	"4 (kernel)"
-#endif /* _KERNEL */
 
 #define LUA_VERSION_NUM			504
 #define LUA_VERSION_RELEASE_NUM		(LUA_VERSION_NUM * 100 + 4)
 
+#ifndef _KERNEL
 #define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+#else /* _KERNEL */
+#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "-kernel"
+#endif /* _KERNEL */
 #define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 #ifndef _KERNEL
 #define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2022 Lua.org, PUC-Rio"
