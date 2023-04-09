@@ -9,9 +9,7 @@
 #define lobject_h
 
 
-#ifndef _KERNEL
 #include <stdarg.h>
-#endif /* _KERNEL */
 
 
 #include "llimits.h"
