@@ -9,10 +9,8 @@
 #ifndef lua_h
 #define lua_h
 
-#ifndef _KERNEL
 #include <stdarg.h>
 #include <stddef.h>
-#endif /* _KERNEL */
 
 
 #include "luaconf.h"

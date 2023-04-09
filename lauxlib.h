@@ -9,10 +9,8 @@
 #define lauxlib_h
 
 
-#ifndef _KERNEL
 #include <stddef.h>
 #include <stdio.h>
-#endif /* _KERNEL */
 
 #include "luaconf.h"
 #include "lua.h"
