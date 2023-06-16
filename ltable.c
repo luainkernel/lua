@@ -23,10 +23,8 @@
 ** Hence even when the load factor reaches 100%, performance remains good.
 */
 
-#ifndef _KERNEL
 #include <math.h>
 #include <limits.h>
-#endif /* _KERNEL */
 
 #include "lua.h"
 
