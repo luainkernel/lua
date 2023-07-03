@@ -57,9 +57,7 @@ typedef struct LG {
 */
 #if !defined(luai_makeseed)
 
-#ifndef _KERNEL
 #include <time.h>
-#endif /* _KERNEL */
 
 /*
 ** Compute an initial seed with some level of randomness.
