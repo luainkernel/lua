@@ -7,9 +7,7 @@
 #if !defined(lopnames_h)
 #define lopnames_h
 
-#ifndef _KERNEL
 #include <stddef.h>
-#endif /* _KERNEL */
 
 
 /* ORDER OP */
