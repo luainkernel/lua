@@ -27,7 +27,7 @@
 
 #define LUA_VERSION_MAJOR_N	5
 #define LUA_VERSION_MINOR_N	4
-#define LUA_VERSION_RELEASE_N	6
+#define LUA_VERSION_RELEASE_N	7
 
 #define LUA_VERSION_NUM  (LUA_VERSION_MAJOR_N * 100 + LUA_VERSION_MINOR_N)
 #define LUA_VERSION_RELEASE_NUM  (LUA_VERSION_NUM * 100 + LUA_VERSION_RELEASE_N)
@@ -539,7 +539,7 @@ struct lua_Debug {
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
-* Copyright (C) 1994-2023 Lua.org, PUC-Rio.
+* Copyright (C) 1994-2024 Lua.org, PUC-Rio.
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
