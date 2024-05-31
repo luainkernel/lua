@@ -406,7 +406,11 @@ typedef struct TString {
     size_t lnglen;  /* length for long strings */
     struct TString *hnext;  /* linked list for hash table */
   } u;
+#ifndef _KERNEL
   char contents[1];
+#else
+  char contents[];
+#endif /* _KERNEL */
 } TString;
 
 
@@ -476,7 +480,11 @@ typedef struct Udata {
   size_t len;  /* number of bytes */
   struct Table *metatable;
   GCObject *gclist;
+#ifndef _KERNEL
   UValue uv[1];  /* user values */
+#else
+  UValue uv[];  /* user values */
+#endif /* _KERNEL */
 } Udata;
 
 
@@ -661,14 +669,22 @@ typedef struct UpVal {
 typedef struct CClosure {
   ClosureHeader;
   lua_CFunction f;
+#ifndef _KERNEL
   TValue upvalue[1];  /* list of upvalues */
+#else
+  TValue upvalue[];  /* list of upvalues */
+#endif /* _KERNEL */
 } CClosure;
 
 
 typedef struct LClosure {
   ClosureHeader;
   struct Proto *p;
+#ifndef _KERNEL
   UpVal *upvals[1];  /* list of upvalues */
+#else
+  UpVal *upvals[];  /* list of upvalues */
+#endif /* _KERNEL */
 } LClosure;
 
 
