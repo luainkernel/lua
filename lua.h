@@ -1,7 +1,7 @@
 /*
 ** $Id: lua.h $
 ** Lua - A Scripting Language
-** Lua.org, PUC-Rio, Brazil (www.lua.org)
+** Lua.org, PUC-Rio, Brazil (http://www.lua.org)
 ** See Copyright Notice at the end of this file
 */
 
@@ -13,6 +13,22 @@
 #include <stddef.h>
 
 
+#include "luaconf.h"
+
+
+#define LUA_VERSION_MAJOR	"5"
+#define LUA_VERSION_MINOR	"4"
+#define LUA_VERSION_RELEASE	"7"
+
+#define LUA_VERSION_NUM			504
+#define LUA_VERSION_RELEASE_NUM		(LUA_VERSION_NUM * 100 + 7)
+
+#ifndef _KERNEL
+#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+#else /* _KERNEL */
+#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "-kernel"
+#endif /* _KERNEL */
+#define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 #ifndef _KERNEL
 #define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2024 Lua.org, PUC-Rio"
 #else /* _KERNEL */
@@ -23,17 +39,6 @@
 	"  Copyright (C) 1994-2024 Lua.org, PUC-Rio"
 #endif /* _KERNEL */
 #define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
-
-
-#define LUA_VERSION_MAJOR_N	5
-#define LUA_VERSION_MINOR_N	4
-#define LUA_VERSION_RELEASE_N	7
-
-#define LUA_VERSION_NUM  (LUA_VERSION_MAJOR_N * 100 + LUA_VERSION_MINOR_N)
-#define LUA_VERSION_RELEASE_NUM  (LUA_VERSION_NUM * 100 + LUA_VERSION_RELEASE_N)
-
-
-#include "luaconf.h"
 
 
 /* mark for precompiled code ('<esc>Lua') */
@@ -520,22 +525,6 @@ struct lua_Debug {
 };
 
 /* }====================================================================== */
-
-
-#define LUAI_TOSTRAUX(x)	#x
-#define LUAI_TOSTR(x)		LUAI_TOSTRAUX(x)
-
-#define LUA_VERSION_MAJOR	LUAI_TOSTR(LUA_VERSION_MAJOR_N)
-#define LUA_VERSION_MINOR	LUAI_TOSTR(LUA_VERSION_MINOR_N)
-#define LUA_VERSION_RELEASE	LUAI_TOSTR(LUA_VERSION_RELEASE_N)
-
-
-#ifndef _KERNEL
-#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
-#else /* _KERNEL */
-#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "-kernel"
-#endif /* _KERNEL */
-#define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 
 
 /******************************************************************************
