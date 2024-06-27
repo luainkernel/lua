@@ -529,7 +529,7 @@ struct lua_Debug {
 
 /******************************************************************************
 #ifdef _KERNEL
-* Copyright (c) 2020-2024 ring-0 Ltda.
+* Copyright (c) 2020-2024 Ring Zero Desenvolvimento de Software LTDA.
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
