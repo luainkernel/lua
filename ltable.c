@@ -110,7 +110,11 @@ static Node *hashint (const Table *t, lua_Integer i) {
   if (ui <= cast_uint(INT_MAX))
     return hashmod(t, cast_int(ui));
   else
+#ifndef _KERNEL
     return hashmod(t, ui);
+#else /* _KERNEL */
+    return lunatik_hashmod(t, ui);
+#endif /* _KERNEL */
 }
 
 
@@ -896,7 +900,11 @@ static lua_Unsigned hash_search (Table *t, lua_Unsigned j) {
   } while (!isempty(luaH_getint(t, j)));  /* repeat until an absent t[j] */
   /* i < j  &&  t[i] present  &&  t[j] absent */
   while (j - i > 1u) {  /* do a binary search between them */
+#ifndef _KERNEL
     lua_Unsigned m = (i + j) / 2;
+#else /* _KERNEL */
+    lua_Unsigned m = (i + j) >> 1;
+#endif /* _KERNEL */
     if (isempty(luaH_getint(t, m))) j = m;
     else i = m;
   }

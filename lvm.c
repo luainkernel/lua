@@ -100,6 +100,7 @@ static int l_strton (const TValue *obj, TValue *result) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** Try to convert a value to a float. The float case is already handled
 ** by the macro 'tonumber'.
@@ -119,7 +120,6 @@ int luaV_tonumber_ (const TValue *obj, lua_Number *n) {
 }
 
 
-#ifndef _KERNEL
 /*
 ** try to convert a float to an integer, rounding according to 'mode'.
 */
@@ -243,12 +243,20 @@ static int forprep (lua_State *L, StkId ra) {
       if (step > 0) {  /* ascending loop? */
         count = l_castS2U(limit) - l_castS2U(init);
         if (step != 1)  /* avoid division in the too common case */
+#ifndef _KERNEL
           count /= l_castS2U(step);
+#else /* _KERNEL */
+          count = lunatik_uidiv(L, count, l_castS2U(step));
+#endif /* _KERNEL */
       }
       else {  /* step < 0; descending loop */
         count = l_castS2U(init) - l_castS2U(limit);
         /* 'step+1' avoids negating 'mininteger' */
+#ifndef _KERNEL
         count /= l_castS2U(-(step + 1)) + 1u;
+#else /* _KERNEL */
+        count = lunatik_uidiv(L, count, l_castS2U(-(step + 1)) + 1u);
+#endif /* _KERNEL */
       }
       /* store the counter in place of the limit (which won't be
          needed anymore) */
@@ -771,8 +779,13 @@ lua_Integer luaV_idiv (lua_State *L, lua_Integer m, lua_Integer n) {
     return intop(-, 0, m);   /* n==-1; avoid overflow with 0x80000...//-1 */
   }
   else {
+#ifndef _KERNEL
     lua_Integer q = m / n;  /* perform C division */
     if ((m ^ n) < 0 && m % n != 0)  /* 'm/n' would be negative non-integer? */
+#else /* _KERNEL */
+    lua_Integer q = lunatik_idiv(L, m, n);  /* perform C division */
+    if ((m ^ n) < 0 && lunatik_imod(L, m, n) != 0)  /* 'm/n' would be negative non-integer? */
+#endif /* _KERNEL */
       q -= 1;  /* correct result for different rounding */
     return q;
   }
@@ -791,7 +804,11 @@ lua_Integer luaV_mod (lua_State *L, lua_Integer m, lua_Integer n) {
     return 0;   /* m % -1 == 0; avoid overflow with 0x80000...%-1 */
   }
   else {
+#ifndef _KERNEL
     lua_Integer r = m % n;
+#else /* _KERNEL */
+    lua_Integer r = lunatik_imod(L, m, n);
+#endif /* _KERNEL */
     if (r != 0 && (r ^ n) < 0)  /* 'm/n' would be non-integer negative? */
       r += n;  /* correct result for different rounding */
     return r;
