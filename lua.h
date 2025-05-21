@@ -18,10 +18,10 @@
 
 #define LUA_VERSION_MAJOR	"5"
 #define LUA_VERSION_MINOR	"4"
-#define LUA_VERSION_RELEASE	"7"
+#define LUA_VERSION_RELEASE	"8"
 
 #define LUA_VERSION_NUM			504
-#define LUA_VERSION_RELEASE_NUM		(LUA_VERSION_NUM * 100 + 7)
+#define LUA_VERSION_RELEASE_NUM		(LUA_VERSION_NUM * 100 + 8)
 
 #ifndef _KERNEL
 #define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
@@ -30,7 +30,7 @@
 #endif /* _KERNEL */
 #define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 #ifndef _KERNEL
-#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2024 Lua.org, PUC-Rio"
+#define LUA_COPYRIGHT	LUA_RELEASE "  Copyright (C) 1994-2025 Lua.org, PUC-Rio"
 #else /* _KERNEL */
 #define LUA_COPYRIGHT	LUA_RELEASE \
 	"  Copyright (c) 2020-2025 Ring Zero Desenvolvimento de Software LTDA." \
@@ -528,12 +528,16 @@ struct lua_Debug {
 
 
 /******************************************************************************
+<<<<<<< HEAD
 #ifdef _KERNEL
 * Copyright (c) 2020-2024 Ring Zero Desenvolvimento de Software LTDA.
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
 * Copyright (C) 1994-2024 Lua.org, PUC-Rio.
+=======
+* Copyright (C) 1994-2025 Lua.org, PUC-Rio.
+>>>>>>> 6e22fedb (New release number, updated copyright year)
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
