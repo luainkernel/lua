@@ -383,6 +383,9 @@ static int gctm (lua_State *L) {
 ** errors, return an error code and an error message in the stack.
 */
 static int lookforfunc (lua_State *L, const char *path, const char *sym) {
+#ifdef _KERNEL
+  path = sym; /* loading only already linked kernel modules */
+#endif /* _KERNEL */
   void *reg = checkclib(L, path);  /* check loaded C libraries */
   if (reg == NULL) {  /* must load library? */
     reg = lsys_load(L, path, *sym == '*');  /* global symbols if 'sym'=='*' */
@@ -546,7 +549,6 @@ static int searcher_Lua (lua_State *L) {
 }
 
 
-#ifndef _KERNEL
 /*
 ** Try to find a load function for module 'modname' at file 'filename'.
 ** First, change '.' to '_' in 'modname'; then, if 'modname' has
@@ -571,7 +573,6 @@ static int loadfunc (lua_State *L, const char *filename, const char *modname) {
   openfunc = lua_pushfstring(L, LUA_POF"%s", modname);
   return lookforfunc(L, filename, openfunc);
 }
-#endif /* _KERNEL */
 
 
 static int searcher_C (lua_State *L) {
@@ -579,11 +580,10 @@ static int searcher_C (lua_State *L) {
 #ifndef _KERNEL
   const char *filename = findfile(L, name, "cpath", LUA_CSUBSEP);
   if (filename == NULL) return 1;  /* module not found in this path */
-  return checkload(L, (loadfunc(L, filename, name) == 0), filename);
-#elif defined(__linux__)
-  const char *sym = lua_pushfstring(L, LUA_POF"%s", name);
-  return checkload(L, (lookforfunc(L, sym, sym) == 0), name);
+#else
+  const char *filename = name;
 #endif /* _KERNEL */
+  return checkload(L, (loadfunc(L, filename, name) == 0), filename);
 }
 
 
