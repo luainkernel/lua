@@ -13,3 +13,6 @@ testes/libs/all
 
 temp
 lua
+
+#lunatik
+*.o.cmd

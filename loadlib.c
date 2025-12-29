@@ -63,6 +63,7 @@ static const char *const CLIBS = "_CLIBS";
 #define cast_Lfunc(p)	cast(lua_CFunction, cast_func(p))
 
 
+#ifndef _KERNEL
 /*
 ** system-dependent functions
 */
@@ -233,6 +234,7 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
 
 /* }====================================================== */
 #endif				/* } */
+#endif /* _KERNEL */
 
 
 /*
@@ -382,6 +384,9 @@ static void addtoclib (lua_State *L, const char *path, void *plib) {
 ** errors, return an error code with an error message in the stack.
 */
 static int lookforfunc (lua_State *L, const char *path, const char *sym) {
+#ifdef _KERNEL
+  path = sym; /* loading only already linked kernel modules */
+#endif /* _KERNEL */
   void *reg = checkclib(L, path);  /* check loaded C libraries */
   if (reg == NULL) {  /* must load library? */
     reg = lsys_load(L, path, *sym == '*');  /* global symbols if 'sym'=='*' */
@@ -573,12 +578,17 @@ static int loadfunc (lua_State *L, const char *filename, const char *modname) {
 
 static int searcher_C (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
+#ifndef _KERNEL
   const char *filename = findfile(L, name, "cpath", LUA_CSUBSEP);
   if (filename == NULL) return 1;  /* module not found in this path */
+#else
+  const char *filename = name;
+#endif /* _KERNEL */
   return checkload(L, (loadfunc(L, filename, name) == 0), filename);
 }
 
 
+#ifndef _KERNEL
 static int searcher_Croot (lua_State *L) {
   const char *filename;
   const char *name = luaL_checkstring(L, 1);
@@ -599,6 +609,7 @@ static int searcher_Croot (lua_State *L) {
   lua_pushstring(L, filename);  /* will be 2nd argument to module */
   return 2;
 }
+#endif /* _KERNEL */
 
 
 static int searcher_preload (lua_State *L) {
@@ -686,7 +697,9 @@ static const luaL_Reg pk_funcs[] = {
   {"searchpath", ll_searchpath},
   /* placeholders */
   {"preload", NULL},
+#ifndef _KERNEL
   {"cpath", NULL},
+#endif /* _KERNEL */
   {"path", NULL},
   {"searchers", NULL},
   {"loaded", NULL},
@@ -705,7 +718,9 @@ static void createsearcherstable (lua_State *L) {
     searcher_preload,
     searcher_Lua,
     searcher_C,
+#ifndef _KERNEL
     searcher_Croot,
+#endif /* _KERNEL */
     NULL
   };
   int i;
@@ -728,7 +743,9 @@ LUAMOD_API int luaopen_package (lua_State *L) {
   createsearcherstable(L);
   /* set paths */
   setpath(L, "path", LUA_PATH_VAR, LUA_PATH_DEFAULT);
+#ifndef _KERNEL
   setpath(L, "cpath", LUA_CPATH_VAR, LUA_CPATH_DEFAULT);
+#endif /* _KERNEL */
   /* store config information */
   lua_pushliteral(L, LUA_DIRSEP "\n" LUA_PATH_SEP "\n" LUA_PATH_MARK "\n"
                      LUA_EXEC_DIR "\n" LUA_IGMARK "\n");

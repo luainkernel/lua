@@ -23,22 +23,31 @@
 #include "llimits.h"
 
 
+#ifndef _KERNEL
 #undef PI
 #define PI	(l_mathop(3.141592653589793238462643383279502884))
+#endif /* _KERNEL */
 
 
 static int math_abs (lua_State *L) {
+#ifndef _KERNEL
   if (lua_isinteger(L, 1)) {
     lua_Integer n = lua_tointeger(L, 1);
+#else /* _KERNEL */
+    lua_Integer n = luaL_checkinteger(L, 1);
+#endif /* _KERNEL */
     if (n < 0) n = (lua_Integer)(0u - (lua_Unsigned)n);
     lua_pushinteger(L, n);
+#ifndef _KERNEL
   }
   else
     lua_pushnumber(L, l_mathop(fabs)(luaL_checknumber(L, 1)));
+#endif /* _KERNEL */
   return 1;
 }
 
 
+#ifndef _KERNEL
 static int math_sin (lua_State *L) {
   lua_pushnumber(L, l_mathop(sin)(luaL_checknumber(L, 1)));
   return 1;
@@ -75,6 +84,7 @@ static int math_atan (lua_State *L) {
   lua_pushnumber(L, l_mathop(atan2)(y, x));
   return 1;
 }
+#endif /* _KERNEL */
 
 
 static int math_toint (lua_State *L) {
@@ -90,6 +100,7 @@ static int math_toint (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static void pushnumint (lua_State *L, lua_Number d) {
   lua_Integer n;
   if (lua_numbertointeger(d, &n))  /* does 'd' fit in an integer? */
@@ -164,6 +175,7 @@ static int math_sqrt (lua_State *L) {
   lua_pushnumber(L, l_mathop(sqrt)(luaL_checknumber(L, 1)));
   return 1;
 }
+#endif /* _KERNEL */
 
 
 static int math_ult (lua_State *L) {
@@ -174,6 +186,7 @@ static int math_ult (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static int math_log (lua_State *L) {
   lua_Number x = luaL_checknumber(L, 1);
   lua_Number res;
@@ -229,6 +242,7 @@ static int math_ldexp (lua_State *L) {
   lua_pushnumber(L, l_mathop(ldexp)(x, ep));
   return 1;
 }
+#endif /* _KERNEL */
 
 
 static int math_min (lua_State *L) {
@@ -259,6 +273,7 @@ static int math_max (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static int math_type (lua_State *L) {
   if (lua_type(L, 1) == LUA_TNUMBER)
     lua_pushstring(L, (lua_isinteger(L, 1)) ? "integer" : "float");
@@ -700,11 +715,13 @@ static int math_log10 (lua_State *L) {
 
 #endif
 /* }================================================================== */
+#endif /* _KERNEL */
 
 
 
 static const luaL_Reg mathlib[] = {
   {"abs",   math_abs},
+#ifndef _KERNEL
   {"acos",  math_acos},
   {"asin",  math_asin},
   {"atan",  math_atan},
@@ -712,15 +729,21 @@ static const luaL_Reg mathlib[] = {
   {"cos",   math_cos},
   {"deg",   math_deg},
   {"exp",   math_exp},
+#endif /* _KERNEL */
   {"tointeger", math_toint},
+#ifndef _KERNEL
   {"floor", math_floor},
   {"fmod",   math_fmod},
   {"frexp", math_frexp},
+#endif /* _KERNEL */
   {"ult",   math_ult},
+#ifndef _KERNEL
   {"ldexp", math_ldexp},
   {"log",   math_log},
+#endif /* _KERNEL */
   {"max",   math_max},
   {"min",   math_min},
+#ifndef _KERNEL
   {"modf",   math_modf},
   {"rad",   math_rad},
   {"sin",   math_sin},
@@ -740,6 +763,7 @@ static const luaL_Reg mathlib[] = {
   {"randomseed", NULL},
   {"pi", NULL},
   {"huge", NULL},
+#endif /* _KERNEL */
   {"maxinteger", NULL},
   {"mininteger", NULL},
   {NULL, NULL}
@@ -751,15 +775,19 @@ static const luaL_Reg mathlib[] = {
 */
 LUAMOD_API int luaopen_math (lua_State *L) {
   luaL_newlib(L, mathlib);
+#ifndef _KERNEL
   lua_pushnumber(L, PI);
   lua_setfield(L, -2, "pi");
   lua_pushnumber(L, (lua_Number)HUGE_VAL);
   lua_setfield(L, -2, "huge");
+#endif /* _KERNEL */
   lua_pushinteger(L, LUA_MAXINTEGER);
   lua_setfield(L, -2, "maxinteger");
   lua_pushinteger(L, LUA_MININTEGER);
   lua_setfield(L, -2, "mininteger");
+#ifndef _KERNEL
   setrandfunc(L);
+#endif /* _KERNEL */
   return 1;
 }
 

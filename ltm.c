@@ -39,8 +39,13 @@ void luaT_init (lua_State *L) {
   static const char *const luaT_eventname[] = {  /* ORDER TM */
     "__index", "__newindex",
     "__gc", "__mode", "__len", "__eq",
+#ifndef _KERNEL
     "__add", "__sub", "__mul", "__mod", "__pow",
     "__div", "__idiv",
+#else /* _KERNEL */
+    "__add", "__sub", "__mul", "__mod",
+    "__idiv",
+#endif /* _KERNEL */
     "__band", "__bor", "__bxor", "__shl", "__shr",
     "__unm", "__bnot", "__lt", "__le",
     "__concat", "__call", "__close"
@@ -210,10 +215,12 @@ int luaT_callorderTM (lua_State *L, const TValue *p1, const TValue *p2,
 int luaT_callorderiTM (lua_State *L, const TValue *p1, int v2,
                        int flip, int isfloat, TMS event) {
   TValue aux; const TValue *p2;
+#ifndef _KERNEL
   if (isfloat) {
     setfltvalue(&aux, cast_num(v2));
   }
   else
+#endif /* _KERNEL */
     setivalue(&aux, v2);
   if (flip) {  /* arguments were exchanged? */
     p2 = p1; p1 = &aux;  /* correct them */
