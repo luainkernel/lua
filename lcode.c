@@ -61,9 +61,11 @@ static int tonumeral (const expdesc *e, TValue *v) {
     case VKINT:
       if (v) setivalue(v, e->u.ival);
       return 1;
+#ifndef _KERNEL
     case VKFLT:
       if (v) setfltvalue(v, e->u.nval);
       return 1;
+#endif /* _KERNEL */
     default: return 0;
   }
 }
@@ -602,6 +604,7 @@ static int luaK_intK (FuncState *fs, lua_Integer n) {
   return k2proto(fs, &o, &o);  /* use integer itself as key */
 }
 
+#ifndef _KERNEL
 /*
 ** Add a float to list of constants and return its index. Floats
 ** with integral values need a different key, to avoid collision
@@ -637,6 +640,7 @@ static int luaK_numberK (FuncState *fs, lua_Number r) {
     return addk(fs, fs->f, &o);
   }
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -697,6 +701,7 @@ void luaK_int (FuncState *fs, int reg, lua_Integer i) {
 }
 
 
+#ifndef _KERNEL
 static void luaK_float (FuncState *fs, int reg, lua_Number f) {
   lua_Integer fi;
   if (luaV_flttointeger(f, &fi, F2Ieq) && fitsBx(fi))
@@ -704,6 +709,7 @@ static void luaK_float (FuncState *fs, int reg, lua_Number f) {
   else
     luaK_codek(fs, reg, luaK_numberK(fs, f));
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -730,8 +736,10 @@ static void const2exp (TValue *v, expdesc *e) {
     case LUA_VNUMINT:
       e->k = VKINT; e->u.ival = ivalue(v);
       break;
+#ifndef _KERNEL
     case LUA_VNUMFLT:
       e->k = VKFLT; e->u.nval = fltvalue(v);
+#endif /* _KERNEL */
       break;
     case LUA_VFALSE:
       e->k = VFALSE;
@@ -901,10 +909,12 @@ static void discharge2reg (FuncState *fs, expdesc *e, int reg) {
       luaK_codek(fs, reg, e->u.info);
       break;
     }
+#ifndef _KERNEL
     case VKFLT: {
       luaK_float(fs, reg, e->u.nval);
       break;
     }
+#endif /* _KERNEL */
     case VKINT: {
       luaK_int(fs, reg, e->u.ival);
       break;
@@ -1060,7 +1070,9 @@ static int luaK_exp2K (FuncState *fs, expdesc *e) {
       case VFALSE: info = boolF(fs); break;
       case VNIL: info = nilK(fs); break;
       case VKINT: info = luaK_intK(fs, e->u.ival); break;
+#ifndef _KERNEL
       case VKFLT: info = luaK_numberK(fs, e->u.nval); break;
+#endif /* _KERNEL */
       case VKSTR: info = stringK(fs, e->u.strval); break;
       case VK: info = e->u.info; break;
       default: return 0;  /* not a constant */
@@ -1184,7 +1196,11 @@ void luaK_goiftrue (FuncState *fs, expdesc *e) {
       pc = e->u.info;  /* save jump position */
       break;
     }
+#ifndef _KERNEL
     case VK: case VKFLT: case VKINT: case VKSTR: case VTRUE: {
+#else /* _KERNEL */
+    case VK: case VKINT: case VKSTR: case VTRUE: {
+#endif /* _KERNEL */
       pc = NO_JUMP;  /* always true; do nothing */
       break;
     }
@@ -1234,7 +1250,11 @@ static void codenot (FuncState *fs, expdesc *e) {
       e->k = VTRUE;  /* true == not nil == not false */
       break;
     }
+#ifndef _KERNEL
     case VK: case VKFLT: case VKINT: case VKSTR: case VTRUE: {
+#else /* _KERNEL */
+    case VK: case VKINT: case VKSTR: case VTRUE: {
+#endif /* _KERNEL */
       e->k = VFALSE;  /* false == not "x" == not 0.5 == not 1 == not true */
       break;
     }
@@ -1301,8 +1321,10 @@ static int isSCnumber (expdesc *e, int *pi, int *isfloat) {
   lua_Integer i;
   if (e->k == VKINT)
     i = e->u.ival;
+#ifndef _KERNEL
   else if (e->k == VKFLT && luaV_flttointeger(e->u.nval, &i, F2Ieq))
     *isfloat = 1;
+#endif /* _KERNEL */
   else
     return 0;  /* not a number */
   if (!hasjumps(e) && fitsC(i)) {
@@ -1404,7 +1426,11 @@ static int validop (int op, TValue *v1, TValue *v2) {
       return (luaV_tointegerns(v1, &i, LUA_FLOORN2I) &&
               luaV_tointegerns(v2, &i, LUA_FLOORN2I));
     }
+#ifndef _KERNEL
     case LUA_OPDIV: case LUA_OPIDIV: case LUA_OPMOD:  /* division by 0 */
+#else /* _KERNEL */
+    case LUA_OPIDIV: case LUA_OPMOD:  /* division by 0 */
+#endif /* _KERNEL */
       return (nvalue(v2) != 0);
     default: return 1;  /* everything else is valid */
   }
@@ -1426,11 +1452,15 @@ static int constfolding (FuncState *fs, int op, expdesc *e1,
     e1->u.ival = ivalue(&res);
   }
   else {  /* folds neither NaN nor 0.0 (to avoid problems with -0.0) */
+#ifndef _KERNEL
     lua_Number n = fltvalue(&res);
     if (luai_numisnan(n) || n == 0)
       return 0;
     e1->k = VKFLT;
     e1->u.nval = n;
+#else /* _KERNEL */
+  return 0;  /* if it is not integer, we must fail */
+#endif /* _KERNEL */
   }
   return 1;
 }
@@ -1669,7 +1699,11 @@ static void codeeq (FuncState *fs, BinOpr opr, expdesc *e1, expdesc *e2) {
   int isfloat = 0;  /* not needed here, but kept for symmetry */
   OpCode op;
   if (e1->k != VNONRELOC) {
+#ifndef _KERNEL
     lua_assert(e1->k == VK || e1->k == VKINT || e1->k == VKFLT);
+#else /* _KERNEL */
+    lua_assert(e1->k == VK || e1->k == VKINT);
+#endif /* _KERNEL */
     swapexps(e1, e2);
   }
   r1 = luaK_exp2anyreg(fs, e1);  /* 1st expression must be in register */
@@ -1731,8 +1765,13 @@ void luaK_infix (FuncState *fs, BinOpr op, expdesc *v) {
       break;
     }
     case OPR_ADD: case OPR_SUB:
+#ifndef _KERNEL
     case OPR_MUL: case OPR_DIV: case OPR_IDIV:
     case OPR_MOD: case OPR_POW:
+#else /* _KERNEL */
+    case OPR_MUL: case OPR_IDIV:
+    case OPR_MOD:
+#endif /* _KERNEL */
     case OPR_BAND: case OPR_BOR: case OPR_BXOR:
     case OPR_SHL: case OPR_SHR: {
       if (!tonumeral(v, NULL))
@@ -1816,7 +1855,11 @@ void luaK_posfix (FuncState *fs, BinOpr opr,
         break; /* coded as (r1 + -I) */
       /* ELSE */
     }  /* FALLTHROUGH */
+#ifndef _KERNEL
     case OPR_DIV: case OPR_IDIV: case OPR_MOD: case OPR_POW: {
+#else /* _KERNEL */
+    case OPR_IDIV: case OPR_MOD: {
+#endif /* _KERNEL */
       codearith(fs, opr, e1, e2, 0, line);
       break;
     }

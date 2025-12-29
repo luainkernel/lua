@@ -29,7 +29,9 @@ typedef enum {
   VTRUE,  /* constant true */
   VFALSE,  /* constant false */
   VK,  /* constant in 'k'; info = index of constant in 'k' */
+#ifndef _KERNEL
   VKFLT,  /* floating constant; nval = numerical float value */
+#endif
   VKINT,  /* integer constant; ival = numerical integer value */
   VKSTR,  /* string constant; strval = TString address;
              (string is fixed by the scanner) */

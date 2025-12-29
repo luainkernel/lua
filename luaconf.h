@@ -377,6 +377,7 @@
 ** ===================================================================
 */
 
+#ifndef _KERNEL
 /*
 @@ LUAI_UACNUMBER is the result of a 'default argument promotion'
 @@ over a floating number.
@@ -457,6 +458,7 @@
 #error "numeric float type not defined"
 
 #endif					/* } */
+#endif /*_KERNEL */
 
 
 
@@ -739,6 +741,9 @@
 ** without modifying the main part of the file.
 */
 
+#ifdef _KERNEL
+#include <lunatik_conf.h>
+#endif /* _KERNEL */
 
 
 #endif

@@ -48,14 +48,23 @@ typedef enum {
 
 
 /* convert an object to a float (including string coercion) */
+#ifndef _KERNEL
 #define tonumber(o,n) \
 	(ttisfloat(o) ? (*(n) = fltvalue(o), 1) : luaV_tonumber_(o,n))
+#else /* _KERNEL */
+#define tonumber       tointeger
+#endif /* _KERNEL */
 
 
 /* convert an object to a float (without string coercion) */
+#ifndef _KERNEL
 #define tonumberns(o,n) \
 	(ttisfloat(o) ? ((n) = fltvalue(o), 1) : \
 	(ttisinteger(o) ? ((n) = cast_num(ivalue(o)), 1) : 0))
+#else /* _KERNEL */
+#define tonumberns(o,n) \
+	(l_likely(ttisinteger(o)) ? ((n) = cast_num(ivalue(o)), 1) : 0)
+#endif /* _KERNEL */
 
 
 /* convert an object to an integer (including string coercion) */

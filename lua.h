@@ -197,7 +197,11 @@ LUA_API int             (lua_isuserdata) (lua_State *L, int idx);
 LUA_API int             (lua_type) (lua_State *L, int idx);
 LUA_API const char     *(lua_typename) (lua_State *L, int tp);
 
+#ifndef _KERNEL
 LUA_API lua_Number      (lua_tonumberx) (lua_State *L, int idx, int *isnum);
+#else /* _KERNEL */
+#define lua_tonumberx	lua_tointegerx
+#endif /* _KERNEL */
 LUA_API lua_Integer     (lua_tointegerx) (lua_State *L, int idx, int *isnum);
 LUA_API int             (lua_toboolean) (lua_State *L, int idx);
 LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
@@ -216,6 +220,7 @@ LUA_API const void     *(lua_topointer) (lua_State *L, int idx);
 #define LUA_OPSUB	1
 #define LUA_OPMUL	2
 #define LUA_OPMOD	3
+#ifndef _KERNEL
 #define LUA_OPPOW	4
 #define LUA_OPDIV	5
 #define LUA_OPIDIV	6
@@ -226,6 +231,16 @@ LUA_API const void     *(lua_topointer) (lua_State *L, int idx);
 #define LUA_OPSHR	11
 #define LUA_OPUNM	12
 #define LUA_OPBNOT	13
+#else /* _KERNEL */
+#define LUA_OPIDIV	4
+#define LUA_OPBAND	5
+#define LUA_OPBOR	6
+#define LUA_OPBXOR	7
+#define LUA_OPSHL	8
+#define LUA_OPSHR	9
+#define LUA_OPUNM	10
+#define LUA_OPBNOT	11
+#endif /* _KERNEL */
 
 LUA_API void  (lua_arith) (lua_State *L, int op);
 
@@ -241,7 +256,11 @@ LUA_API int   (lua_compare) (lua_State *L, int idx1, int idx2, int op);
 ** push functions (C -> stack)
 */
 LUA_API void        (lua_pushnil) (lua_State *L);
+#ifndef _KERNEL
 LUA_API void        (lua_pushnumber) (lua_State *L, lua_Number n);
+#else /* _KERNEL */
+#define lua_pushnumber(L, n)	lua_pushinteger(L, (lua_Integer)(n))
+#endif /* _KERNEL */
 LUA_API void        (lua_pushinteger) (lua_State *L, lua_Integer n);
 LUA_API const char *(lua_pushlstring) (lua_State *L, const char *s, size_t len);
 LUA_API const char *(lua_pushexternalstring) (lua_State *L,
@@ -516,11 +535,19 @@ struct lua_Debug {
 #define LUA_VERSION_MINOR	LUAI_TOSTR(LUA_VERSION_MINOR_N)
 #define LUA_VERSION_RELEASE	LUAI_TOSTR(LUA_VERSION_RELEASE_N)
 
+#ifndef _KERNEL
 #define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
+#else /* _KERNEL */
+#define LUA_VERSION	"Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "-kernel"
+#endif /* _KERNEL */
 #define LUA_RELEASE	LUA_VERSION "." LUA_VERSION_RELEASE
 
 
 /******************************************************************************
+#ifdef _KERNEL
+* Copyright (C) 2020-2026 Ring Zero Desenvolvimento de Software LTDA.
+* Copyright (C) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
+#endif
 * Copyright (C) 1994-2025 Lua.org, PUC-Rio.
 *
 * Permission is hereby granted, free of charge, to any person obtaining

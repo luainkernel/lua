@@ -23,7 +23,9 @@ LUAI_DDEF const lu_byte luaP_opmodes[NUM_OPCODES] = {
 /*       MM OT IT T  A  mode		   opcode  */
   opmode(0, 0, 0, 0, 1, iABC)		/* OP_MOVE */
  ,opmode(0, 0, 0, 0, 1, iAsBx)		/* OP_LOADI */
+#ifndef _KERNEL
  ,opmode(0, 0, 0, 0, 1, iAsBx)		/* OP_LOADF */
+#endif /* _KERNEL */
  ,opmode(0, 0, 0, 0, 1, iABx)		/* OP_LOADK */
  ,opmode(0, 0, 0, 0, 1, iABx)		/* OP_LOADKX */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_LOADFALSE */
@@ -47,8 +49,10 @@ LUAI_DDEF const lu_byte luaP_opmodes[NUM_OPCODES] = {
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_SUBK */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_MULK */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_MODK */
+#ifndef _KERNEL
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_POWK */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_DIVK */
+#endif /* _KERNEL */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_IDIVK */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_BANDK */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_BORK */
@@ -59,8 +63,10 @@ LUAI_DDEF const lu_byte luaP_opmodes[NUM_OPCODES] = {
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_SUB */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_MUL */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_MOD */
+#ifndef _KERNEL
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_POW */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_DIV */
+#endif /* _KERNEL */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_IDIV */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_BAND */
  ,opmode(0, 0, 0, 0, 1, iABC)		/* OP_BOR */

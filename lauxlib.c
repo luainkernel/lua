@@ -246,6 +246,7 @@ LUALIB_API int luaL_error (lua_State *L, const char *fmt, ...) {
 }
 
 
+#ifndef _KERNEL
 LUALIB_API int luaL_fileresult (lua_State *L, int stat, const char *fname) {
   int en = errno;  /* calls to Lua API may change this value */
   if (stat) {
@@ -264,6 +265,7 @@ LUALIB_API int luaL_fileresult (lua_State *L, int stat, const char *fname) {
     return 3;
   }
 }
+#endif /* _KERNEL */
 
 
 #if !defined(l_inspectstat)	/* { */
@@ -288,6 +290,7 @@ LUALIB_API int luaL_fileresult (lua_State *L, int stat, const char *fname) {
 #endif				/* } */
 
 
+#ifndef _KERNEL
 LUALIB_API int luaL_execresult (lua_State *L, int stat) {
   if (stat != 0 && errno != 0)  /* error with an 'errno'? */
     return luaL_fileresult(L, 0, NULL);
@@ -303,6 +306,7 @@ LUALIB_API int luaL_execresult (lua_State *L, int stat) {
     return 3;  /* return true/fail,what,code */
   }
 }
+#endif /* _KERNEL */
 
 /* }====================================================== */
 
@@ -437,6 +441,7 @@ LUALIB_API lua_Number luaL_optnumber (lua_State *L, int arg, lua_Number def) {
 }
 
 
+#ifndef _KERNEL
 static void interror (lua_State *L, int arg) {
   if (lua_isnumber(L, arg))
     luaL_argerror(L, arg, "number has no integer representation");
@@ -459,6 +464,7 @@ LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int arg,
                                                       lua_Integer def) {
   return luaL_opt(L, luaL_checkinteger, arg, def);
 }
+#endif /* _KERNEL */
 
 /* }====================================================== */
 
@@ -733,6 +739,7 @@ LUALIB_API void luaL_unref (lua_State *L, int t, int ref) {
 ** =======================================================
 */
 
+#ifndef _KERNEL
 typedef struct LoadF {
   unsigned n;  /* number of pre-read characters */
   FILE *f;  /* file being read */
@@ -846,6 +853,7 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   lua_remove(L, fnameindex);
   return status;
 }
+#endif /* _KERNEL */
 
 
 typedef struct LoadS {
@@ -1196,7 +1204,11 @@ LUALIB_API void luaL_checkversion_ (lua_State *L, lua_Number ver, size_t sz) {
   if (sz != LUAL_NUMSIZES)  /* check numeric types */
     luaL_error(L, "core and library have incompatible numeric types");
   else if (v != ver)
+#ifndef _KERNEL
     luaL_error(L, "version mismatch: app. needs %f, Lua core provides %f",
+#else
+    luaL_error(L, "version mismatch: app. needs %d, Lua core provides %d",
+#endif /* _KERNEL */
                   (LUAI_UACNUMBER)ver, (LUAI_UACNUMBER)v);
 }
 

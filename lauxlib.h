@@ -59,9 +59,14 @@ LUALIB_API const char *(luaL_optlstring) (lua_State *L, int arg,
 LUALIB_API lua_Number (luaL_checknumber) (lua_State *L, int arg);
 LUALIB_API lua_Number (luaL_optnumber) (lua_State *L, int arg, lua_Number def);
 
+#ifndef _KERNEL
 LUALIB_API lua_Integer (luaL_checkinteger) (lua_State *L, int arg);
 LUALIB_API lua_Integer (luaL_optinteger) (lua_State *L, int arg,
                                           lua_Integer def);
+#else /* _KERNEL */
+#define luaL_checkinteger		luaL_checknumber
+#define luaL_optinteger(L,a,d)	luaL_optnumber(L, (a), (lua_Number)(d))
+#endif /* _KERNEL */
 
 LUALIB_API void (luaL_checkstack) (lua_State *L, int sz, const char *msg);
 LUALIB_API void (luaL_checktype) (lua_State *L, int arg, int t);
@@ -78,10 +83,16 @@ LUALIB_API int (luaL_error) (lua_State *L, const char *fmt, ...);
 LUALIB_API int (luaL_checkoption) (lua_State *L, int arg, const char *def,
                                    const char *const lst[]);
 
+#ifndef _KERNEL
 LUALIB_API int (luaL_fileresult) (lua_State *L, int stat, const char *fname);
 LUALIB_API int (luaL_execresult) (lua_State *L, int stat);
+#endif /* _KERNEL */
 
+#if !(defined(_KERNEL) && defined(LUNATIK_GENSYMBOLS))
 LUALIB_API void *luaL_alloc (void *ud, void *ptr, size_t osize,
+#else /* _KERNEL && LUNATIK_GENSYMBOLS */
+LUALIB_API void *(luaL_alloc) (void *ud, void *ptr, size_t osize,
+#endif /* _KERNEL && LUNATIK_GENSYMBOLS */
                                                   size_t nsize);
 
 
@@ -92,8 +103,10 @@ LUALIB_API void *luaL_alloc (void *ud, void *ptr, size_t osize,
 LUALIB_API int (luaL_ref) (lua_State *L, int t);
 LUALIB_API void (luaL_unref) (lua_State *L, int t, int ref);
 
+#ifndef _KERNEL
 LUALIB_API int (luaL_loadfilex) (lua_State *L, const char *filename,
                                                const char *mode);
+#endif /* _KERNEL */
 
 #define luaL_loadfile(L,f)	luaL_loadfilex(L,f,NULL)
 
@@ -103,7 +116,11 @@ LUALIB_API int (luaL_loadstring) (lua_State *L, const char *s);
 
 LUALIB_API lua_State *(luaL_newstate) (void);
 
+#if !(defined(_KERNEL) && defined(LUNATIK_GENSYMBOLS))
 LUALIB_API unsigned luaL_makeseed (lua_State *L);
+#else /* _KERNEL && LUNATIK_GENSYMBOLS */
+LUALIB_API unsigned (luaL_makeseed) (lua_State *L);
+#endif /* _KERNEL && LUNATIK_GENSYMBOLS */
 
 LUALIB_API lua_Integer (luaL_len) (lua_State *L, int idx);
 
@@ -221,6 +238,7 @@ LUALIB_API char *(luaL_buffinitsize) (lua_State *L, luaL_Buffer *B, size_t sz);
 
 
 
+#ifndef _KERNEL
 /*
 ** {======================================================
 ** File handles for IO library
@@ -242,6 +260,7 @@ typedef struct luaL_Stream {
 } luaL_Stream;
 
 /* }====================================================== */
+#endif /* _KERNEL */
 
 
 /*

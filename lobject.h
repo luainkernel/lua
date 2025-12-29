@@ -51,7 +51,9 @@ typedef union Value {
   void *p;         /* light userdata */
   lua_CFunction f; /* light C functions */
   lua_Integer i;   /* integer numbers */
+#ifndef _KERNEL
   lua_Number n;    /* float numbers */
+#endif /* _KERNEL */
   /* not used, but may avoid warnings for uninitialized value */
   lu_byte ub;
 } Value;
@@ -334,25 +336,37 @@ typedef struct GCObject {
 
 /* Variant tags for numbers */
 #define LUA_VNUMINT	makevariant(LUA_TNUMBER, 0)  /* integer numbers */
+#ifndef _KERNEL
 #define LUA_VNUMFLT	makevariant(LUA_TNUMBER, 1)  /* float numbers */
+#endif /* _KERNEL */
 
 #define ttisnumber(o)		checktype((o), LUA_TNUMBER)
+#ifndef _KERNEL
 #define ttisfloat(o)		checktag((o), LUA_VNUMFLT)
+#endif /* _KERNEL */
 #define ttisinteger(o)		checktag((o), LUA_VNUMINT)
 
+#ifndef _KERNEL
 #define nvalue(o)	check_exp(ttisnumber(o), \
 	(ttisinteger(o) ? cast_num(ivalue(o)) : fltvalue(o)))
 #define fltvalue(o)	check_exp(ttisfloat(o), val_(o).n)
+#else /* _KERNEL */
+#define nvalue(o)	check_exp(ttisnumber(o), cast_num(ivalue(o)))
+#endif /* _KERNEL */
 #define ivalue(o)	check_exp(ttisinteger(o), val_(o).i)
 
+#ifndef _KERNEL
 #define fltvalueraw(v)	((v).n)
+#endif /* _KERNEL */
 #define ivalueraw(v)	((v).i)
 
+#ifndef _KERNEL
 #define setfltvalue(obj,x) \
   { TValue *io=(obj); val_(io).n=(x); settt_(io, LUA_VNUMFLT); }
 
 #define chgfltvalue(obj,x) \
   { TValue *io=(obj); lua_assert(ttisfloat(io)); val_(io).n=(x); }
+#endif /* _KERNEL */
 
 #define setivalue(obj,x) \
   { TValue *io=(obj); val_(io).i=(x); settt_(io, LUA_VNUMINT); }
@@ -494,7 +508,11 @@ typedef struct Udata {
   size_t len;  /* number of bytes */
   struct Table *metatable;
   GCObject *gclist;
+#if !(defined(_KERNEL) && defined(CONFIG_UBSAN_BOUNDS))
   UValue uv[1];  /* user values */
+#else /* _KERNEL && CONFIG_UBSAN_BOUNDS */
+  UValue uv[];  /* user values */
+#endif /* _KERNEL && CONFIG_UBSAN_BOUNDS */
 } Udata;
 
 
@@ -699,14 +717,22 @@ typedef struct UpVal {
 typedef struct CClosure {
   ClosureHeader;
   lua_CFunction f;
+#if !(defined(_KERNEL) && defined(CONFIG_UBSAN_BOUNDS))
   TValue upvalue[1];  /* list of upvalues */
+#else /* _KERNEL && CONFIG_UBSAN_BOUNDS */
+  TValue upvalue[];  /* list of upvalues */
+#endif /* _KERNEL && CONFIG_UBSAN_BOUNDS */
 } CClosure;
 
 
 typedef struct LClosure {
   ClosureHeader;
   struct Proto *p;
+#if !(defined(_KERNEL) && defined(CONFIG_UBSAN_BOUNDS))
   UpVal *upvals[1];  /* list of upvalues */
+#else /* _KERNEL && CONFIG_UBSAN_BOUNDS */
+  UpVal *upvals[];  /* list of upvalues */
+#endif /* _KERNEL && CONFIG_UBSAN_BOUNDS */
 } LClosure;
 
 

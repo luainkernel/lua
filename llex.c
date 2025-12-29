@@ -104,7 +104,11 @@ const char *luaX_token2str (LexState *ls, int token) {
 static const char *txtToken (LexState *ls, int token) {
   switch (token) {
     case TK_NAME: case TK_STRING:
+#ifndef _KERNEL
     case TK_FLT: case TK_INT:
+#else /* _KERNEL */
+    case TK_INT:
+#endif /* _KERNEL */
       save(ls, '\0');
       return luaO_pushfstring(ls->L, "'%s'", luaZ_buffer(ls->buff));
     default:
@@ -250,9 +254,13 @@ static int read_numeral (LexState *ls, SemInfo *seminfo) {
   if (first == '0' && check_next2(ls, "xX"))  /* hexadecimal? */
     expo = "Pp";
   for (;;) {
+#ifndef _KERNEL
     if (check_next2(ls, expo))  /* exponent mark? */
       check_next2(ls, "-+");  /* optional exponent sign */
     else if (lisxdigit(ls->current) || ls->current == '.')  /* '%x|%.' */
+#else /* _KERNEL */
+    if (lisxdigit(ls->current))  /* '%x' */
+#endif /* _KERNEL */
       save_and_next(ls);
     else break;
   }
@@ -260,16 +268,23 @@ static int read_numeral (LexState *ls, SemInfo *seminfo) {
     save_and_next(ls);  /* force an error */
   save(ls, '\0');
   if (luaO_str2num(luaZ_buffer(ls->buff), &obj) == 0)  /* format error? */
+#ifndef _KERNEL
     lexerror(ls, "malformed number", TK_FLT);
   if (ttisinteger(&obj)) {
+#else /* _KERNEL */
+    lexerror(ls, "malformed number", TK_INT);
+  lua_assert(ttisinteger(&obj));
+#endif /* _KERNEL */
     seminfo->i = ivalue(&obj);
     return TK_INT;
+#ifndef _KERNEL
   }
   else {
     lua_assert(ttisfloat(&obj));
     seminfo->r = fltvalue(&obj);
     return TK_FLT;
   }
+#endif /* _KERNEL */
 }
 
 

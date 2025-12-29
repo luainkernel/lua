@@ -50,6 +50,7 @@
 #define MAXTAGLOOP	2000
 
 
+#ifndef _KERNEL
 /*
 ** 'l_intfitsf' checks whether a given integer is in the range that
 ** can be converted to a float without rounding. Used in comparisons.
@@ -79,6 +80,7 @@
 #define l_intfitsf(i)	1
 
 #endif
+#endif /* _KERNEL */
 
 
 /*
@@ -120,6 +122,7 @@ int luaV_tonumber_ (const TValue *obj, lua_Number *n) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** try to convert a float to an integer, rounding according to 'mode'.
 */
@@ -132,6 +135,7 @@ int luaV_flttointeger (lua_Number n, lua_Integer *p, F2Imod mode) {
   }
   return lua_numbertointeger(f, p);
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -140,9 +144,14 @@ int luaV_flttointeger (lua_Number n, lua_Integer *p, F2Imod mode) {
 ** ("Fast track" handled by macro 'tointegerns'.)
 */
 int luaV_tointegerns (const TValue *obj, lua_Integer *p, F2Imod mode) {
+#ifndef _KERNEL
   if (ttisfloat(obj))
     return luaV_flttointeger(fltvalue(obj), p, mode);
   else if (ttisinteger(obj)) {
+#else
+  if (ttisinteger(obj)) {
+    UNUSED(mode);
+#endif /* _KERNEL */
     *p = ivalue(obj);
     return 1;
   }
@@ -215,10 +224,21 @@ static int forprep (lua_State *L, StkId ra) {
   TValue *pinit = s2v(ra);
   TValue *plimit = s2v(ra + 1);
   TValue *pstep = s2v(ra + 2);
+#ifndef _KERNEL
   if (ttisinteger(pinit) && ttisinteger(pstep)) { /* integer loop? */
     lua_Integer init = ivalue(pinit);
     lua_Integer step = ivalue(pstep);
     lua_Integer limit;
+#else /* _KERNEL */
+  /* try making all values integers */
+  lua_Integer init; lua_Integer limit; lua_Integer step;
+  if (l_unlikely(!tointeger(plimit, &limit)))
+    luaG_forerror(L, plimit, "limit");
+  if (l_unlikely(!tointeger(pstep, &step)))
+    luaG_forerror(L, pstep, "step");
+  if (l_unlikely(!tointeger(pinit, &init)))
+    luaG_forerror(L, pinit, "initial value");
+#endif /* _KERNEL */
     if (step == 0)
       luaG_runerror(L, "'for' step is zero");
     if (forlimit(L, init, plimit, &limit, step))
@@ -240,6 +260,7 @@ static int forprep (lua_State *L, StkId ra) {
       setivalue(s2v(ra + 1), step);  /* change limit to step */
       chgivalue(s2v(ra + 2), init);  /* change step to init */
     }
+#ifndef _KERNEL
   }
   else {  /* try making all values floats */
     lua_Number init; lua_Number limit; lua_Number step;
@@ -261,10 +282,12 @@ static int forprep (lua_State *L, StkId ra) {
       setfltvalue(s2v(ra + 2), init);  /* control variable */
     }
   }
+#endif /* _KERNEL */
   return 0;
 }
 
 
+#ifndef _KERNEL
 /*
 ** Execute a step of a float numerical for loop, returning
 ** true iff the loop must continue. (The integer case is
@@ -283,6 +306,7 @@ static int floatforloop (StkId ra) {
   else
     return 0;  /* finish the loop */
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -412,6 +436,7 @@ static int l_strcmp (const TString *ts1, const TString *ts2) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** Check whether integer 'i' is less than float 'f'. If 'i' has an
 ** exact representation as a float ('l_intfitsf'), compare numbers as
@@ -485,6 +510,7 @@ l_sinline int LEfloatint (lua_Number f, lua_Integer i) {
       return f < 0;  /* less? */
   }
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -492,6 +518,7 @@ l_sinline int LEfloatint (lua_Number f, lua_Integer i) {
 */
 l_sinline int LTnum (const TValue *l, const TValue *r) {
   lua_assert(ttisnumber(l) && ttisnumber(r));
+#ifndef _KERNEL
   if (ttisinteger(l)) {
     lua_Integer li = ivalue(l);
     if (ttisinteger(r))
@@ -506,6 +533,10 @@ l_sinline int LTnum (const TValue *l, const TValue *r) {
     else  /* 'l' is float and 'r' is int */
       return LTfloatint(lf, ivalue(r));
   }
+#else /* _KERNEL */
+  lua_assert(ttisinteger(l) && ttisinteger(r));
+  return (ivalue(l) < ivalue(r));
+#endif /* _KERNEL */
 }
 
 
@@ -514,6 +545,7 @@ l_sinline int LTnum (const TValue *l, const TValue *r) {
 */
 l_sinline int LEnum (const TValue *l, const TValue *r) {
   lua_assert(ttisnumber(l) && ttisnumber(r));
+#ifndef _KERNEL
   if (ttisinteger(l)) {
     lua_Integer li = ivalue(l);
     if (ttisinteger(r))
@@ -528,6 +560,10 @@ l_sinline int LEnum (const TValue *l, const TValue *r) {
     else  /* 'l' is float and 'r' is int */
       return LEfloatint(lf, ivalue(r));
   }
+#else /* _KERNEL */
+  lua_assert(ttisinteger(l) && ttisinteger(r));
+  return (ivalue(l) <= ivalue(r));
+#endif /* _KERNEL */
 }
 
 
@@ -585,6 +621,7 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
     return 0;
   else if (ttypetag(t1) != ttypetag(t2)) {
     switch (ttypetag(t1)) {
+#ifndef _KERNEL
       case LUA_VNUMINT: {  /* integer == float? */
         /* integer and float can only be equal if float has an integer
            value equal to the integer */
@@ -597,6 +634,7 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
         return (luaV_flttointeger(fltvalue(t1), &i1, F2Ieq) &&
                 i1 == ivalue(t2));
       }
+#endif /* _KERNEL */
       case LUA_VSHRSTR: case LUA_VLNGSTR: {
         /* compare two strings with different variants: they can be
            equal when one string is a short string and the other is
@@ -615,8 +653,10 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
         return 1;
       case LUA_VNUMINT:
         return (ivalue(t1) == ivalue(t2));
+#ifndef _KERNEL
       case LUA_VNUMFLT:
         return (fltvalue(t1) == fltvalue(t2));
+#endif /* _KERNEL */
       case LUA_VLIGHTUSERDATA: return pvalue(t1) == pvalue(t2);
       case LUA_VSHRSTR:
         return eqshrstr(tsvalue(t1), tsvalue(t2));
@@ -798,6 +838,7 @@ lua_Integer luaV_mod (lua_State *L, lua_Integer m, lua_Integer n) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** Float modulus
 */
@@ -806,6 +847,7 @@ lua_Number luaV_modf (lua_State *L, lua_Number m, lua_Number n) {
   luai_nummod(L, m, n, r);
   return r;
 }
+#endif /* _KERNEL */
 
 
 /* number of bits in an integer */
@@ -941,6 +983,7 @@ void luaV_finishOp (lua_State *L) {
 ** Arithmetic operations with immediate operands. 'iop' is the integer
 ** operation, 'fop' is the float operation.
 */
+#ifndef _KERNEL
 #define op_arithI(L,iop,fop) {  \
   TValue *ra = vRA(i); \
   TValue *v1 = vRB(i);  \
@@ -954,8 +997,19 @@ void luaV_finishOp (lua_State *L) {
     lua_Number fimm = cast_num(imm);  \
     pc++; setfltvalue(ra, fop(L, nb, fimm)); \
   }}
+#else /* _KERNEL */
+#define op_arithI(L,iop,fop) {  \
+  TValue *ra = vRA(i); \
+  TValue *v1 = vRB(i);  \
+  int imm = GETARG_sC(i);  \
+  if (ttisinteger(v1)) {  \
+    lua_Integer iv1 = ivalue(v1);  \
+    pc++; setivalue(ra, iop(L, iv1, imm));  \
+  }}
+#endif /* _KERNEL */
 
 
+#ifndef _KERNEL
 /*
 ** Auxiliary function for arithmetic operations over floats and others
 ** with two operands.
@@ -984,11 +1038,13 @@ void luaV_finishOp (lua_State *L) {
   TValue *v1 = vRB(i);  \
   TValue *v2 = KC(i); lua_assert(ttisnumber(v2));  \
   op_arithf_aux(L, v1, v2, fop); }
+#endif /* _KERNEL */
 
 
 /*
 ** Arithmetic operations over integers and floats.
 */
+#ifndef _KERNEL
 #define op_arith_aux(L,v1,v2,iop,fop) {  \
   if (ttisinteger(v1) && ttisinteger(v2)) {  \
     StkId ra = RA(i); \
@@ -996,6 +1052,14 @@ void luaV_finishOp (lua_State *L) {
     pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
   }  \
   else op_arithf_aux(L, v1, v2, fop); }
+#else /* _KERNEL */
+#define op_arith_aux(L,v1,v2,iop,fop) {  \
+  if (ttisinteger(v1) && ttisinteger(v2)) {  \
+    StkId ra = RA(i); \
+    lua_Integer i1 = ivalue(v1); lua_Integer i2 = ivalue(v2);  \
+    pc++; setivalue(s2v(ra), iop(L, i1, i2));  \
+  }}
+#endif /* _KERNEL */
 
 
 /*
@@ -1068,6 +1132,7 @@ void luaV_finishOp (lua_State *L) {
 ** Order operations with immediate operand. (Immediate operand is
 ** always small enough to have an exact representation as a float.)
 */
+#ifndef _KERNEL
 #define op_orderI(L,opi,opf,inv,tm) {  \
   TValue *ra = vRA(i); \
   int cond;  \
@@ -1084,6 +1149,19 @@ void luaV_finishOp (lua_State *L) {
     Protect(cond = luaT_callorderiTM(L, ra, im, inv, isf, tm));  \
   }  \
   docondjump(); }
+#else /* _KERNEL */
+#define op_orderI(L,opi,opf,inv,tm) {  \
+  TValue *ra = vRA(i); \
+  int cond;  \
+  int im = GETARG_sB(i);  \
+  if (ttisinteger(ra))  \
+    cond = opi(ivalue(ra), im);  \
+  else {  \
+    int isf = GETARG_C(i);  \
+    Protect(cond = luaT_callorderiTM(L, ra, im, inv, isf, tm));  \
+  }  \
+  docondjump(); }
+#endif /* _KERNEL */
 
 /* }================================================================== */
 
@@ -1241,12 +1319,14 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         setivalue(s2v(ra), b);
         vmbreak;
       }
+#ifndef _KERNEL
       vmcase(OP_LOADF) {
         StkId ra = RA(i);
         int b = GETARG_sBx(i);
         setfltvalue(s2v(ra), cast_num(b));
         vmbreak;
       }
+#endif /* _KERNEL */
       vmcase(OP_LOADK) {
         StkId ra = RA(i);
         TValue *rb = k + GETARG_Bx(i);
@@ -1458,6 +1538,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         op_arithK(L, luaV_mod, luaV_modf);
         vmbreak;
       }
+#ifndef _KERNEL
       vmcase(OP_POWK) {
         op_arithfK(L, luai_numpow);
         vmbreak;
@@ -1466,6 +1547,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         op_arithfK(L, luai_numdiv);
         vmbreak;
       }
+#endif /* _KERNEL */
       vmcase(OP_IDIVK) {
         savestate(L, ci);  /* in case of division by 0 */
         op_arithK(L, luaV_idiv, luai_numidiv);
@@ -1520,6 +1602,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         op_arith(L, luaV_mod, luaV_modf);
         vmbreak;
       }
+#ifndef _KERNEL
       vmcase(OP_POW) {
         op_arithf(L, luai_numpow);
         vmbreak;
@@ -1528,6 +1611,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         op_arithf(L, luai_numdiv);
         vmbreak;
       }
+#endif /* _KERNEL */
       vmcase(OP_IDIV) {  /* floor division */
         savestate(L, ci);  /* in case of division by 0 */
         op_arith(L, luaV_idiv, luai_numidiv);
@@ -1586,6 +1670,7 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
       vmcase(OP_UNM) {
         StkId ra = RA(i);
         TValue *rb = vRB(i);
+#ifndef _KERNEL
         lua_Number nb;
         if (ttisinteger(rb)) {
           lua_Integer ib = ivalue(rb);
@@ -1594,8 +1679,14 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         else if (tonumberns(rb, nb)) {
           setfltvalue(s2v(ra), luai_numunm(L, nb));
         }
+#else /* _KERNEL */
+        lua_Integer ib;
+        if (tointeger(rb, &ib)) {
+          setivalue(s2v(ra), intop(-, 0, ib));
+        }
         else
           Protect(luaT_trybinTM(L, rb, rb, ra, TM_UNM));
+#endif /* _KERNEL */
         vmbreak;
       }
       vmcase(OP_BNOT) {
@@ -1677,8 +1768,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
         int im = GETARG_sB(i);
         if (ttisinteger(s2v(ra)))
           cond = (ivalue(s2v(ra)) == im);
+#ifndef _KERNEL
         else if (ttisfloat(s2v(ra)))
           cond = luai_numeq(fltvalue(s2v(ra)), cast_num(im));
+#endif /* _KERNEL */
         else
           cond = 0;  /* other types cannot be equal to a number */
         docondjump();
@@ -1841,8 +1934,10 @@ void luaV_execute (lua_State *L, CallInfo *ci) {
             pc -= GETARG_Bx(i);  /* jump back */
           }
         }
+#ifndef _KERNEL
         else if (floatforloop(ra))  /* float loop */
           pc -= GETARG_Bx(i);  /* jump back */
+#endif /* _KERNEL */
         updatetrap(ci);  /* allows a signal to break the loop */
         vmbreak;
       }

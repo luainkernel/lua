@@ -312,6 +312,7 @@ static int arith_mod (lua_State *L) {
   return arith(L, LUA_OPMOD, "__mod");
 }
 
+#ifndef _KERNEL
 static int arith_pow (lua_State *L) {
   return arith(L, LUA_OPPOW, "__pow");
 }
@@ -319,6 +320,7 @@ static int arith_pow (lua_State *L) {
 static int arith_div (lua_State *L) {
   return arith(L, LUA_OPDIV, "__div");
 }
+#endif /* _KERNEL */
 
 static int arith_idiv (lua_State *L) {
   return arith(L, LUA_OPIDIV, "__idiv");
@@ -334,8 +336,10 @@ static const luaL_Reg stringmetamethods[] = {
   {"__sub", arith_sub},
   {"__mul", arith_mul},
   {"__mod", arith_mod},
+#ifndef _KERNEL
   {"__pow", arith_pow},
   {"__div", arith_div},
+#endif /* _KERNEL */
   {"__idiv", arith_idiv},
   {"__unm", arith_unm},
   {"__index", NULL},  /* placeholder */
@@ -990,6 +994,7 @@ static int str_gsub (lua_State *L) {
 
 
 
+#ifndef _KERNEL
 /*
 ** {======================================================
 ** STRING FORMAT
@@ -1080,6 +1085,7 @@ static int lua_number2strx (lua_State *L, char *buff, unsigned sz,
 ** is maximum exponent + 1). (99+3+1, adding some extra, 110)
 */
 #define MAX_ITEMF	(110 + l_floatatt(MAX_10_EXP))
+#endif /* _KERNEL */
 
 
 /*
@@ -1146,6 +1152,7 @@ static void addquoted (luaL_Buffer *b, const char *s, size_t len) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** Serialize a floating-point number in such a way that it can be
 ** scanned back by Lua. Use hexadecimal format for "common" numbers
@@ -1174,6 +1181,7 @@ static int quotefloat (lua_State *L, char *buff, lua_Number n) {
   /* for the fixed representations */
   return l_sprintf(buff, MAX_ITEM, "%s", s);
 }
+#endif /* _KERNEL */
 
 
 static void addliteral (lua_State *L, luaL_Buffer *b, int arg) {
@@ -1187,15 +1195,19 @@ static void addliteral (lua_State *L, luaL_Buffer *b, int arg) {
     case LUA_TNUMBER: {
       char *buff = luaL_prepbuffsize(b, MAX_ITEM);
       int nb;
+#ifndef _KERNEL
       if (!lua_isinteger(L, arg))  /* float? */
         nb = quotefloat(L, buff, lua_tonumber(L, arg));
       else {  /* integers */
+#endif /* _KERNEL */
         lua_Integer n = lua_tointeger(L, arg);
         const char *format = (n == LUA_MININTEGER)  /* corner case? */
                            ? "0x%" LUA_INTEGER_FRMLEN "x"  /* use hex */
                            : LUA_INTEGER_FMT;  /* else use default format */
         nb = l_sprintf(buff, MAX_ITEM, format, (LUAI_UACINT)n);
+#ifndef _KERNEL
       }
+#endif /* _KERNEL */
       luaL_addsize(b, cast_uint(nb));
       break;
     }
@@ -1317,6 +1329,7 @@ static int str_format (lua_State *L) {
           nb = l_sprintf(buff, maxitem, form, (LUAI_UACINT)n);
           break;
         }
+#ifndef _KERNEL
         case 'a': case 'A':
           checkformat(L, form, L_FMTFLAGSF, 1);
           addlenmod(form, LUA_NUMBER_FRMLEN);
@@ -1344,6 +1357,7 @@ static int str_format (lua_State *L) {
           nb = l_sprintf(buff, maxitem, form, p);
           break;
         }
+#endif /* _KERNEL */
         case 'q': {
           if (form[2] != '\0')  /* modifiers? */
             return luaL_error(L, "specifier '%%q' cannot have modifiers");
@@ -1432,9 +1446,11 @@ typedef struct Header {
 typedef enum KOption {
   Kint,		/* signed integers */
   Kuint,	/* unsigned integers */
+#ifndef _KERNEL
   Kfloat,	/* single-precision floating-point numbers */
   Knumber,	/* Lua "native" floating-point numbers */
   Kdouble,	/* double-precision floating-point numbers */
+#endif /* _KERNEL */
   Kchar,	/* fixed-length strings */
   Kstring,	/* strings with prefixed length */
   Kzstr,	/* zero-terminated strings */
@@ -1504,9 +1520,13 @@ static KOption getoption (Header *h, const char **fmt, size_t *size) {
     case 'j': *size = sizeof(lua_Integer); return Kint;
     case 'J': *size = sizeof(lua_Integer); return Kuint;
     case 'T': *size = sizeof(size_t); return Kuint;
+#ifndef _KERNEL
     case 'f': *size = sizeof(float); return Kfloat;
     case 'n': *size = sizeof(lua_Number); return Knumber;
     case 'd': *size = sizeof(double); return Kdouble;
+#else /* _KERNEL */
+    case 'n': *size = sizeof(lua_Number); return Kint;
+#endif /* _KERNEL */
     case 'i': *size = getnumlimit(h, fmt, sizeof(int)); return Kint;
     case 'I': *size = getnumlimit(h, fmt, sizeof(int)); return Kuint;
     case 's': *size = getnumlimit(h, fmt, sizeof(size_t)); return Kstring;
@@ -1592,6 +1612,7 @@ static void packint (luaL_Buffer *b, lua_Unsigned n,
 }
 
 
+#ifndef _KERNEL
 /*
 ** Copy 'size' bytes from 'src' to 'dest', correcting endianness if
 ** given 'islittle' is different from native endianness.
@@ -1606,6 +1627,7 @@ static void copywithendian (char *dest, const char *src,
       *(dest--) = *(src++);
   }
 }
+#endif /* _KERNEL */
 
 
 static int str_pack (lua_State *L) {
@@ -1645,6 +1667,7 @@ static int str_pack (lua_State *L) {
         packint(&b, (lua_Unsigned)n, h.islittle, cast_uint(size), 0);
         break;
       }
+#ifndef _KERNEL
       case Kfloat: {  /* C float */
         float f = (float)luaL_checknumber(L, arg);  /* get argument */
         char *buff = luaL_prepbuffsize(&b, sizeof(f));
@@ -1669,6 +1692,7 @@ static int str_pack (lua_State *L) {
         luaL_addsize(&b, size);
         break;
       }
+#endif /* _KERNEL */
       case Kchar: {  /* fixed-size string */
         size_t len;
         const char *s = luaL_checklstring(L, arg, &len);
@@ -1796,6 +1820,7 @@ static int str_unpack (lua_State *L) {
         lua_pushinteger(L, res);
         break;
       }
+#ifndef _KERNEL
       case Kfloat: {
         float f;
         copywithendian((char *)&f, data + pos, sizeof(f), h.islittle);
@@ -1814,6 +1839,7 @@ static int str_unpack (lua_State *L) {
         lua_pushnumber(L, (lua_Number)f);
         break;
       }
+#endif /* _KERNEL */
       case Kchar: {
         lua_pushlstring(L, data + pos, size);
         break;

@@ -211,7 +211,11 @@ static int luaB_collectgarbage (lua_State *L) {
       int k = lua_gc(L, o);
       int b = lua_gc(L, LUA_GCCOUNTB);
       checkvalres(k);
+#if !(defined(_KERNEL) && defined(LUNATIK_GCCOUNT))
       lua_pushnumber(L, (lua_Number)k + ((lua_Number)b/1024));
+#else /* _KERNEL && LUNATIK_GCCOUNT */
+      lua_pushinteger(L, ((lua_Integer)k << 10) + b);
+#endif /* _KERNEL && LUNATIK_GCCOUNT */
       return 1;
     }
     case LUA_GCSTEP: {

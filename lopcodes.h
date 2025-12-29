@@ -234,7 +234,9 @@ typedef enum {
 ------------------------------------------------------------------------*/
 OP_MOVE,/*	A B	R[A] := R[B]					*/
 OP_LOADI,/*	A sBx	R[A] := sBx					*/
+#ifndef _KERNEL
 OP_LOADF,/*	A sBx	R[A] := (lua_Number)sBx				*/
+#endif /* _KERNEL */
 OP_LOADK,/*	A Bx	R[A] := K[Bx]					*/
 OP_LOADKX,/*	A	R[A] := K[extra arg]				*/
 OP_LOADFALSE,/*	A	R[A] := false					*/
@@ -264,8 +266,10 @@ OP_ADDK,/*	A B C	R[A] := R[B] + K[C]:number			*/
 OP_SUBK,/*	A B C	R[A] := R[B] - K[C]:number			*/
 OP_MULK,/*	A B C	R[A] := R[B] * K[C]:number			*/
 OP_MODK,/*	A B C	R[A] := R[B] % K[C]:number			*/
+#ifndef _KERNEL
 OP_POWK,/*	A B C	R[A] := R[B] ^ K[C]:number			*/
 OP_DIVK,/*	A B C	R[A] := R[B] / K[C]:number			*/
+#endif /* _KERNEL */
 OP_IDIVK,/*	A B C	R[A] := R[B] // K[C]:number			*/
 
 OP_BANDK,/*	A B C	R[A] := R[B] & K[C]:integer			*/
@@ -279,8 +283,10 @@ OP_ADD,/*	A B C	R[A] := R[B] + R[C]				*/
 OP_SUB,/*	A B C	R[A] := R[B] - R[C]				*/
 OP_MUL,/*	A B C	R[A] := R[B] * R[C]				*/
 OP_MOD,/*	A B C	R[A] := R[B] % R[C]				*/
+#ifndef _KERNEL
 OP_POW,/*	A B C	R[A] := R[B] ^ R[C]				*/
 OP_DIV,/*	A B C	R[A] := R[B] / R[C]				*/
+#endif /* _KERNEL */
 OP_IDIV,/*	A B C	R[A] := R[B] // R[C]				*/
 
 OP_BAND,/*	A B C	R[A] := R[B] & R[C]				*/

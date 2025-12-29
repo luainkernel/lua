@@ -15,7 +15,9 @@
 static const char *const opnames[] = {
   "MOVE",
   "LOADI",
+#ifndef _KERNEL
   "LOADF",
+#endif /* _KERNEL */
   "LOADK",
   "LOADKX",
   "LOADFALSE",
@@ -39,8 +41,10 @@ static const char *const opnames[] = {
   "SUBK",
   "MULK",
   "MODK",
+#ifndef _KERNEL
   "POWK",
   "DIVK",
+#endif /* _KERNEL */
   "IDIVK",
   "BANDK",
   "BORK",
@@ -51,8 +55,10 @@ static const char *const opnames[] = {
   "SUB",
   "MUL",
   "MOD",
+#ifndef _KERNEL
   "POW",
   "DIV",
+#endif /* _KERNEL */
   "IDIV",
   "BAND",
   "BOR",

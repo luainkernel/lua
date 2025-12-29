@@ -50,7 +50,11 @@ int luaS_eqstr (TString *a, TString *b) {
 }
 
 
+#if !(defined(_KERNEL) && defined(LUNATIK_RUNTIME))
 static unsigned luaS_hash (const char *str, size_t l, unsigned seed) {
+#else /* _KERNEL && LUNATIK_RUNTIME */
+unsigned luaS_hash (const char *str, size_t l, unsigned seed) {
+#endif /* _KERNEL && LUNATIK_RUNTIME */
   unsigned int h = seed ^ cast_uint(l);
   for (; l > 0; l--)
     h ^= ((h<<5) + (h>>2) + cast_byte(str[l - 1]));
@@ -235,7 +239,12 @@ static TString *internshrstr (lua_State *L, const char *str, size_t l) {
   ts = createstrobj(L, sizestrshr(l), LUA_VSHRSTR, h);
   ts->shrlen = cast(ls_byte, l);
   getshrstr(ts)[l] = '\0';  /* ending 0 */
+#if !(defined(_KERNEL) && defined(CONFIG_FORTIFY_SOURCE))
   memcpy(getshrstr(ts), str, l * sizeof(char));
+#else /* _KERNEL && CONFIG_FORTIFY_SOURCE */
+  unsafe_memcpy(getshrstr(ts), str, l * sizeof(char),
+    "bounds checked by luaS_newlstr and luaS_normstr");
+#endif /* _KERNEL && CONFIG_FORTIFY_SOURCE */
   ts->u.hnext = *list;
   *list = ts;
   tb->nuse++;

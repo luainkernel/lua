@@ -25,8 +25,12 @@
 */
 typedef enum BinOpr {
   /* arithmetic operators */
+#ifndef _KERNEL
   OPR_ADD, OPR_SUB, OPR_MUL, OPR_MOD, OPR_POW,
   OPR_DIV, OPR_IDIV,
+#else /* _KERNEL */
+  OPR_ADD, OPR_SUB, OPR_MUL, OPR_MOD, OPR_IDIV,
+#endif /* _KERNEL */
   /* bitwise operators */
   OPR_BAND, OPR_BOR, OPR_BXOR,
   OPR_SHL, OPR_SHR,
