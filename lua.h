@@ -528,16 +528,12 @@ struct lua_Debug {
 
 
 /******************************************************************************
-<<<<<<< HEAD
 #ifdef _KERNEL
-* Copyright (c) 2020-2024 Ring Zero Desenvolvimento de Software LTDA.
+* Copyright (c) 2020-2025 Ring Zero Desenvolvimento de Software LTDA.
 * Copyright (c) 2017-2019 CUJO LLC.
 * Copyright (c) 2016-2016 Lourival Vieira Neto <lneto@NetBSD.org>.
 #endif
-* Copyright (C) 1994-2024 Lua.org, PUC-Rio.
-=======
 * Copyright (C) 1994-2025 Lua.org, PUC-Rio.
->>>>>>> 6e22fedb (New release number, updated copyright year)
 *
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
