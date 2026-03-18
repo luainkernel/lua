@@ -224,11 +224,13 @@ static int f_close (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static int io_close (lua_State *L) {
   if (lua_isnone(L, 1))  /* no argument? */
     lua_getfield(L, LUA_REGISTRYINDEX, IO_OUTPUT);  /* use default output */
   return f_close(L);
 }
+#endif /* _KERNEL */
 
 
 static int f_gc (lua_State *L) {
@@ -277,6 +279,7 @@ static int io_open (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** function to close 'popen' files
 */
@@ -342,6 +345,7 @@ static int io_input (lua_State *L) {
 static int io_output (lua_State *L) {
   return g_iofile(L, IO_OUTPUT, "w");
 }
+#endif /* _KERNEL */
 
 
 static int io_readline (lua_State *L);
@@ -388,6 +392,7 @@ static int f_lines (lua_State *L) {
 static int io_lines (lua_State *L) {
   int toclose;
   if (lua_isnone(L, 1)) lua_pushnil(L);  /* at least one argument */
+#ifndef _KERNEL
   if (lua_isnil(L, 1)) {  /* no file name? */
     lua_getfield(L, LUA_REGISTRYINDEX, IO_INPUT);  /* get default input */
     lua_replace(L, 1);  /* put it at index 1 */
@@ -395,6 +400,9 @@ static int io_lines (lua_State *L) {
     toclose = 0;  /* do not close it after iteration */
   }
   else {  /* open a new file */
+#else /* _KERNEL */
+  {  /* open a new file */
+#endif /* _KERNEL */
     const char *filename = luaL_checkstring(L, 1);
     opencheck(L, filename, "r");
     lua_replace(L, 1);  /* put file at index 1 */
@@ -616,9 +624,11 @@ static int g_read (lua_State *L, FILE *f, int first) {
 }
 
 
+#ifndef _KERNEL
 static int io_read (lua_State *L) {
   return g_read(L, getiofile(L, IO_INPUT), 1);
 }
+#endif /* _KERNEL */
 
 
 static int f_read (lua_State *L) {
@@ -687,9 +697,11 @@ static int g_write (lua_State *L, FILE *f, int arg) {
 }
 
 
+#ifndef _KERNEL
 static int io_write (lua_State *L) {
   return g_write(L, getiofile(L, IO_OUTPUT), 1);
 }
+#endif /* _KERNEL */
 
 
 static int f_write (lua_State *L) {
@@ -719,6 +731,7 @@ static int f_seek (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static int f_setvbuf (lua_State *L) {
   static const int mode[] = {_IONBF, _IOFBF, _IOLBF};
   static const char *const modenames[] = {"no", "full", "line", NULL};
@@ -730,6 +743,7 @@ static int f_setvbuf (lua_State *L) {
   res = setvbuf(f, NULL, mode[op], (size_t)sz);
   return luaL_fileresult(L, res == 0, NULL);
 }
+#endif /* _KERNEL */
 
 
 static int aux_flush (lua_State *L, FILE *f) {
@@ -743,26 +757,34 @@ static int f_flush (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 static int io_flush (lua_State *L) {
   return aux_flush(L, getiofile(L, IO_OUTPUT));
 }
+#endif /* _KERNEL */
 
 
 /*
 ** functions for 'io' library
 */
 static const luaL_Reg iolib[] = {
+#ifndef _KERNEL
   {"close", io_close},
   {"flush", io_flush},
   {"input", io_input},
+#endif /* _KERNEL */
   {"lines", io_lines},
   {"open", io_open},
+#ifndef _KERNEL
   {"output", io_output},
   {"popen", io_popen},
   {"read", io_read},
   {"tmpfile", io_tmpfile},
+#endif /* _KERNEL */
   {"type", io_type},
+#ifndef _KERNEL
   {"write", io_write},
+#endif /* _KERNEL */
   {NULL, NULL}
 };
 
@@ -777,7 +799,9 @@ static const luaL_Reg meth[] = {
   {"flush", f_flush},
   {"seek", f_seek},
   {"close", f_close},
+#ifndef _KERNEL
   {"setvbuf", f_setvbuf},
+#endif /* _KERNEL */
   {NULL, NULL}
 };
 
@@ -804,6 +828,7 @@ static void createmeta (lua_State *L) {
 }
 
 
+#ifndef _KERNEL
 /*
 ** function to (not) close the standard files stdin, stdout, and stderr
 */
@@ -827,15 +852,18 @@ static void createstdfile (lua_State *L, FILE *f, const char *k,
   }
   lua_setfield(L, -2, fname);  /* add file to module */
 }
+#endif /* _KERNEL */
 
 
 LUAMOD_API int luaopen_io (lua_State *L) {
   luaL_newlib(L, iolib);  /* new module */
   createmeta(L);
+#ifndef _KERNEL
   /* create (and set) default files */
   createstdfile(L, stdin, IO_INPUT, "stdin");
   createstdfile(L, stdout, IO_OUTPUT, "stdout");
   createstdfile(L, stderr, NULL, "stderr");
+#endif /* _KERNEL */
   return 1;
 }
 
