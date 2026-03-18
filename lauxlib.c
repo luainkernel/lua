@@ -246,7 +246,6 @@ LUALIB_API int luaL_error (lua_State *L, const char *fmt, ...) {
 }
 
 
-#ifndef _KERNEL
 LUALIB_API int luaL_fileresult (lua_State *L, int stat, const char *fname) {
   int en = errno;  /* calls to Lua API may change this value */
   if (stat) {
@@ -265,7 +264,6 @@ LUALIB_API int luaL_fileresult (lua_State *L, int stat, const char *fname) {
     return 3;
   }
 }
-#endif /* _KERNEL */
 
 
 #if !defined(l_inspectstat)	/* { */
