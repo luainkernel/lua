@@ -30,9 +30,7 @@ static const luaL_Reg stdlibs[] = {
   {LUA_LOADLIBNAME, luaopen_package},
   {LUA_COLIBNAME, luaopen_coroutine},
   {LUA_DBLIBNAME, luaopen_debug},
-#ifndef _KERNEL
   {LUA_IOLIBNAME, luaopen_io},
-#endif /* _KERNEL */
   {LUA_MATHLIBNAME, luaopen_math},
 #ifndef _KERNEL
   {LUA_OSLIBNAME, luaopen_os},
