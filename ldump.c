@@ -39,14 +39,14 @@ typedef struct {
 ** All high-level dumps go through dumpVector; you can change it to
 ** change the endianness of the result
 */
-#if defined(LUNATIKC)
+#ifndef LUNATIKC
+#define dumpVector(D,v,n)	dumpBlock(D,v,(n)*sizeof((v)[0]))
+#else /* LUNATIKC */
 static void dumpSwapVector (DumpState *D, const void *v, size_t n, size_t size);
 
 #define dumpVector(D,v,n)	(luaU_dumpswap \
 	? dumpSwapVector(D,v,n,sizeof((v)[0])) \
 	: dumpBlock(D,v,(n)*sizeof((v)[0])))
-#else
-#define dumpVector(D,v,n)	dumpBlock(D,v,(n)*sizeof((v)[0]))
 #endif /* LUNATIKC */
 
 #define dumpLiteral(D, s)	dumpBlock(D,s,sizeof(s) - sizeof(char))
@@ -67,7 +67,7 @@ static void dumpBlock (DumpState *D, const void *b, size_t size) {
 }
 
 
-#if defined(LUNATIKC)
+#ifdef LUNATIKC
 LUAI_DDEF int luaU_dumpswap = 0;
 
 /*
@@ -269,12 +269,12 @@ static void dumpDebug (DumpState *D, const Proto *f) {
   if (n > 0) {
     /* 'abslineinfo' is an array of structures of int's */
     dumpAlign(D, sizeof(int));
-#if defined(LUNATIKC)
+#ifndef LUNATIKC
+    dumpVector(D, f->abslineinfo, cast_uint(n));
+#else /* LUNATIKC */
     /* dump it as int's, so that a byte swap keeps each field */
     dumpVector(D, cast(const int *, cast(const void *, f->abslineinfo)),
                   2 * cast_uint(n));
-#else
-    dumpVector(D, f->abslineinfo, cast_uint(n));
 #endif /* LUNATIKC */
   }
   n = (D->strip) ? 0 : f->sizelocvars;

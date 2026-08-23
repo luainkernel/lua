@@ -37,7 +37,7 @@ LUAI_FUNC LClosure* luaU_undump (lua_State* L, ZIO* Z, const char* name,
 LUAI_FUNC int luaU_dump (lua_State* L, const Proto* f, lua_Writer w,
                          void* data, int strip);
 
-#if defined(LUNATIKC)
+#ifdef LUNATIKC
 /* when set, raw values are dumped byte-reversed (cross-endian target) */
 LUAI_DDEC(int luaU_dumpswap;)
 #endif /* LUNATIKC */
