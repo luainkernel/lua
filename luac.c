@@ -275,9 +275,11 @@ static void PrintType(const Proto* f, int i)
   case LUA_VTRUE:
 	printf("B");
 	break;
+#ifndef _KERNEL
   case LUA_VNUMFLT:
 	printf("F");
 	break;
+#endif /* _KERNEL */
   case LUA_VNUMINT:
 	printf("I");
 	break;
@@ -306,6 +308,7 @@ static void PrintConstant(const Proto* f, int i)
   case LUA_VTRUE:
 	printf("true");
 	break;
+#ifndef _KERNEL
   case LUA_VNUMFLT:
 	{
 	char buff[100];
@@ -314,6 +317,7 @@ static void PrintConstant(const Proto* f, int i)
 	if (buff[strspn(buff,"-0123456789")]=='\0') printf(".0");
 	break;
 	}
+#endif /* _KERNEL */
   case LUA_VNUMINT:
 	printf(LUA_INTEGER_FMT,ivalue(o));
 	break;
@@ -363,9 +367,11 @@ static void PrintCode(const Proto* f)
    case OP_LOADI:
 	printf("%d %d",a,sbx);
 	break;
+#ifndef _KERNEL
    case OP_LOADF:
 	printf("%d %d",a,sbx);
 	break;
+#endif /* _KERNEL */
    case OP_LOADK:
 	printf("%d %d",a,bx);
 	printf(COMMENT); PrintConstant(f,bx);
@@ -456,6 +462,7 @@ static void PrintCode(const Proto* f)
 	printf("%d %d %d",a,b,c);
 	printf(COMMENT); PrintConstant(f,c);
 	break;
+#ifndef _KERNEL
    case OP_POWK:
 	printf("%d %d %d",a,b,c);
 	printf(COMMENT); PrintConstant(f,c);
@@ -464,6 +471,7 @@ static void PrintCode(const Proto* f)
 	printf("%d %d %d",a,b,c);
 	printf(COMMENT); PrintConstant(f,c);
 	break;
+#endif /* _KERNEL */
    case OP_IDIVK:
 	printf("%d %d %d",a,b,c);
 	printf(COMMENT); PrintConstant(f,c);
@@ -498,12 +506,14 @@ static void PrintCode(const Proto* f)
    case OP_MOD:
 	printf("%d %d %d",a,b,c);
 	break;
+#ifndef _KERNEL
    case OP_POW:
 	printf("%d %d %d",a,b,c);
 	break;
    case OP_DIV:
 	printf("%d %d %d",a,b,c);
 	break;
+#endif /* _KERNEL */
    case OP_IDIV:
 	printf("%d %d %d",a,b,c);
 	break;
