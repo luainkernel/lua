@@ -119,11 +119,13 @@ static int loadInt (LoadState *S) {
 
 
 
+#ifndef _KERNEL
 static lua_Number loadNumber (LoadState *S) {
   lua_Number x;
   loadVar(S, x);
   return x;
 }
+#endif /* _KERNEL */
 
 
 static lua_Integer loadInteger (LoadState *S) {
@@ -222,9 +224,11 @@ static void loadConstants (LoadState *S, Proto *f) {
       case LUA_VTRUE:
         setbtvalue(o);
         break;
+#ifndef _KERNEL
       case LUA_VNUMFLT:
         setfltvalue(o, loadNumber(S));
         break;
+#endif /* _KERNEL */
       case LUA_VNUMINT:
         setivalue(o, loadInteger(S));
         break;

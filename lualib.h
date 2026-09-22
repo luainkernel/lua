@@ -38,9 +38,11 @@ LUAMOD_API int (luaopen_io) (lua_State *L);
 #define LUA_MATHLIBK	(LUA_IOLIBK << 1)
 LUAMOD_API int (luaopen_math) (lua_State *L);
 
+#ifndef _KERNEL
 #define LUA_OSLIBNAME	"os"
 #define LUA_OSLIBK	(LUA_MATHLIBK << 1)
 LUAMOD_API int (luaopen_os) (lua_State *L);
+#endif /* _KERNEL */
 
 #define LUA_STRLIBNAME	"string"
 #define LUA_STRLIBK	(LUA_OSLIBK << 1)

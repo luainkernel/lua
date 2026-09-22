@@ -113,9 +113,11 @@ static void dumpInt (DumpState *D, int x) {
 }
 
 
+#ifndef _KERNEL
 static void dumpNumber (DumpState *D, lua_Number x) {
   dumpVar(D, x);
 }
+#endif /* _KERNEL */
 
 
 /*
@@ -187,9 +189,11 @@ static void dumpConstants (DumpState *D, const Proto *f) {
     int tt = ttypetag(o);
     dumpByte(D, tt);
     switch (tt) {
+#ifndef _KERNEL
       case LUA_VNUMFLT:
         dumpNumber(D, fltvalue(o));
         break;
+#endif /* _KERNEL */
       case LUA_VNUMINT:
         dumpInteger(D, ivalue(o));
         break;

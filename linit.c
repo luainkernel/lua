@@ -32,7 +32,9 @@ static const luaL_Reg stdlibs[] = {
   {LUA_DBLIBNAME, luaopen_debug},
   {LUA_IOLIBNAME, luaopen_io},
   {LUA_MATHLIBNAME, luaopen_math},
+#ifndef _KERNEL
   {LUA_OSLIBNAME, luaopen_os},
+#endif /* _KERNEL */
   {LUA_STRLIBNAME, luaopen_string},
   {LUA_TABLIBNAME, luaopen_table},
   {LUA_UTF8LIBNAME, luaopen_utf8},
