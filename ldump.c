@@ -39,9 +39,17 @@ typedef struct {
 ** All high-level dumps go through dumpVector; you can change it to
 ** change the endianness of the result
 */
+#ifndef _KERNEL
 #define dumpVector(D,v,n)	dumpBlock(D,v,(n)*sizeof((v)[0]))
+#else /* _KERNEL */
+#define dumpVector(D,v,n)	{ size_t j; for (j = 0; j < (n); j++) dumpBlock(D,&(v)[j],sizeof((v)[0])); }
+#endif /* _KERNEL */
 
+#ifndef _KERNEL
 #define dumpLiteral(D, s)	dumpBlock(D,s,sizeof(s) - sizeof(char))
+#else /* _KERNEL */
+#define dumpLiteral(D, s)	dumpVector(D,s,sizeof(s) - sizeof(char))
+#endif /* _KERNEL */
 
 
 /*
@@ -239,7 +247,11 @@ static void dumpDebug (DumpState *D, const Proto *f) {
   if (n > 0) {
     /* 'abslineinfo' is an array of structures of int's */
     dumpAlign(D, sizeof(int));
+#ifndef _KERNEL
     dumpVector(D, f->abslineinfo, cast_uint(n));
+#else /* _KERNEL */
+    dumpVector(D, cast(const int *, f->abslineinfo), 2 * cast_uint(n));
+#endif /* _KERNEL */
   }
   n = (D->strip) ? 0 : f->sizelocvars;
   dumpInt(D, n);
