@@ -221,7 +221,15 @@ static void dumpProtos (DumpState *D, const Proto *f) {
   int n = f->sizep;
   dumpInt(D, n);
   for (i = 0; i < n; i++)
+#ifndef _KERNEL
     dumpFunction(D, f->p[i]);
+#else /* _KERNEL */
+  {
+    luaE_incCstack(D->L);
+    dumpFunction(D, f->p[i]);
+    D->L->nCcalls--;
+  }
+#endif /* _KERNEL */
 }
 
 

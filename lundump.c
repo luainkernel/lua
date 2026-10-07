@@ -258,7 +258,13 @@ static void loadProtos (LoadState *S, Proto *f) {
   for (i = 0; i < n; i++) {
     f->p[i] = luaF_newproto(S->L);
     luaC_objbarrier(S->L, f, f->p[i]);
+#ifndef _KERNEL
     loadFunction(S, f->p[i]);
+#else /* _KERNEL */
+    luaE_incCstack(S->L);
+    loadFunction(S, f->p[i]);
+    S->L->nCcalls--;
+#endif /* _KERNEL */
   }
 }
 
